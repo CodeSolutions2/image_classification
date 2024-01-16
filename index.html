@@ -71,8 +71,11 @@
       
       image.onload = function (){
         // Convert the image element to a tensor using fromPixels
-        var tensor = tf.browser.fromPixels(image);
-        document.getElementById("outData").innerHTML = tf.max(tensor)
+        var tensor_image = tf.browser.fromPixels(image);
+        document.getElementById("outData").innerHTML = tf.max(tensor_image);
+        const eTensor = tensor_image.expandDims(0);
+        // Give image to model
+        mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
       };
       
 
