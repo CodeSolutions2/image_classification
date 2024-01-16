@@ -10,7 +10,7 @@
     <canvas id="canvasId" width="224" height="224" style="display:block"></canvas>
 
 
-    <button id="myBtn" onclick="tryagain()">Run Selection</button>
+    <button id="myBtn" onclick="retreive_image()">Run Selection</button>
 
     <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
 
@@ -30,8 +30,6 @@
 
   
 <script>
-
-
   var canvasElement = document.getElementById("canvasId");
   const ctx = canvasElement.getContext("2d");
 
@@ -39,22 +37,157 @@
 
   // -------------------------------------------------
 
-  function tryagain(){
+  async function load_image() {
 
-    const img1 = new Image(); // Image constructor
-    // img1.src = "apple.png";
-    img1.src = "https://storage.googleapis.com/images4download0/image2.png";
-    img1.alt = "alt";
-    document.body.appendChild(img1);
+    var IMAGE_SIZE = 224;
+    
+    // ----------------------
 
-    const img2 = document.createElement("img"); // Use DOM HTMLImageElement
-    img2.src = "tomatoe.jpg";
-    img2.alt = "alt text";
-    document.body.appendChild(img2);
+    try {
 
-    // using first image in the document
-    alert(document.images[0].src);
+      // ----------------------
 
+      // Load image on canvas: the canvas allows one to manipulate the image values as an array/matrix
+
+      // Way 0
+      // Throws an error without a trigger (can only load image with EventListener or onload)
+      // image.addEventListener("load", (e) => { ctx.drawImage(image, 0,0); image.style.display = "none"; });
+
+      // OR
+
+      // Way 1
+      const image = new Image();
+
+      image.src = "https://storage.googleapis.com/images4download0/image2.png";
+
+      // This returns quickly
+      // image.onload = () => ctx.drawImage(image, 0,0);
+      // OR
+      // This retuns slowly because it needs to return the Promise
+      // image.onload = () => {ctx.drawImage(image, 0,0);}
+      // OR
+      image.onload = function (){ctx.drawImage(image, 0,0);  image.style.display = "none"; 
+      // Test if one has the image data
+      const imageData = ctx.getImageData(0, 0, IMAGE_SIZE, IMAGE_SIZE);
+      // var normalArray = Array.prototype.slice.call(imageData);
+      // const test0 = tf.tensor(normalArray);
+      // document.getElementById("outData").innerHTML = tf.max(test0);
+      }
+
+      
+
+      // OR
+
+      // Way 2
+      // const image = new Image(IMAGE_SIZE, IMAGE_SIZE, 3); // Using optional size for image
+      // image.onload = drawImageActualSize; // Draw when image has loaded
+
+      // Load an image of intrinsic size (IMAGE_SIZE x IMAGE_SIZE) in CSS pixels
+      // image.src = "apple.png";
+      // image.src = "https://storage.googleapis.com/images4download0/image2.png";
+
+      // image is an image object
+
+      // ----------------------
+
+      // This did not work
+      // const tensor = tf.browser.fromPixels(image);
+
+      // OR
+
+      // Uncaught Error: pixels passed to tf.browser.fromPixels() must be either an HTMLVideoElement, HTMLImageElement, HTMLCanvasElement, ImageData in browser, or OffscreenCanvas, ImageData in webworker or {data: Uint32Array, width: number, height: number}, but was Uint8ClampedArray
+      // Uint8ClampedArray means that values are from 0-255
+      // const imageData = ctx.getImageData(0, 0, IMAGE_SIZE, IMAGE_SIZE).data;
+
+      // Uncaught Error: pixels passed to tf.browser.fromPixels() must be either an HTMLVideoElement, HTMLImageElement, HTMLCanvasElement, ImageData in browser, or OffscreenCanvas, ImageData in webworker or {data: Uint32Array, width: number, height: number}, but was Array
+
+      // Converting imageData in format Uint8Array to Uint32Array
+      // Uncaught Error: pixels passed to tf.browser.fromPixels() must be either an HTMLVideoElement, HTMLImageElement, HTMLCanvasElement, ImageData in browser, or OffscreenCanvas, ImageData in webworker or {data: Uint32Array, width: number, height: number}, but was Uint32Array
+      // const imageData1 = new Uint32Array(imageData);
+
+      // Converting the imageData to Array format
+      // var normalArray = Array.prototype.slice.call(imageData);
+
+      // Tried converting the imageData but gave errors
+      // const tensor = tf.browser.fromPixels(imageData1);
+
+      // OR
+
+      // Works
+      // const tensor_image = tf.browser.fromPixels(canvasElement);
+      // This is size 224,224,3
+
+      // ----------------------
+
+      // 200704
+      // const test0 = tf.tensor(normalArray)
+
+      // document.getElementById("outData1").innerHTML = test0;
+
+      
+      // Works!
+      // const test1 = tf.zeros([1, IMAGE_SIZE, IMAGE_SIZE, 3])
+
+      // ----------------------
+
+      // const eTensor = tensor_image.expandDims(0);
+      // This is size 1,224,224,3
+
+      // ----------------------
+
+      return image
+
+    } catch (error) {
+      document.getElementById("outData").innerHTML = error; 
+      return error
+    }
+    
+  }  // end of load_image
+  
+  // -------------------------------------------------
+
+  async function retreive_image() {
+
+    try {
+      
+      await load_image().then(imageObj => imageObj).then(imageObj => {
+
+        // imageObj is 'HTMLImageElement'
+
+        // ----------------------
+        // Test if it has received the image
+        const tensor_image = tf.browser.fromPixels(canvasElement);
+
+        // OR
+
+        // const tensor_image = tf.browser.fromPixels(imageObj);
+        // IndexSizeError: Index or size is negative or greater than the allowed amount
+        // Common causes for this I found were returning negative values or trying to draw the image to the canvas before the image is actually loaded. 
+        // ----------------------
+
+        const eTensor = tensor_image.expandDims(0);
+
+        // ----------------------
+
+        document.getElementById("outData").innerHTML = tf.max(tensor_image);
+
+        // Give image to model
+        mobilenet.load().then(model => {
+      model.classify(eTensor).then(predictions => {
+        for(var i = 0; i<predictions.length; i++){
+          outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;
+        }
+        });
+        });
+      
+      });
+
+
+    } catch (error) {
+      document.getElementById("outData").innerHTML = error
+    }
+
+    // -------------------------------------------------
 
   }
 
