@@ -8,137 +8,48 @@
     <!-- OR -->
     <!-- Makes a selection file reader from the PC only, not from the cloud -->
     <!-- <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg"> -->
-    <!-- OR -->
-    <!-- <canvas id="canvasId" width="224" height="224" style="display:block"></canvas> -->
 
 
-    <button id="myBtn" onclick="load_image()">Run Selection</button>
+    <button id="myBtn" onclick="run_mobilenet()">Run Selection</button>
 
     <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
 
     <textarea id="outData" rows="2" cols="70" placeholder="notification" style="display:block"></textarea>
 
-    <textarea id="outData1" rows="2" cols="70" placeholder="notification" style="display:block"></textarea>
-
-
-<style>
-      canvas {
-        border: 1px solid black;
-      }
-    </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script> 
 
   
 <script>
-  // var canvasElement = document.getElementById("canvasId");
-  // const ctx = canvasElement.getContext("2d");
-
+  
   const outp = document.getElementById('output');
 
   // -------------------------------------------------
 
-  async function load_image() {
+  async function run_mobilenet() {
 
     var IMAGE_SIZE = 224;
     
     // ----------------------
 
     try {
-
       
       const image = new Image();
 
       // image.src = "https://storage.googleapis.com/images4download0/image2.png";
       image.src = "apple.png";
       // image.src = "tomatoe.png";
-
-      // This returns quickly
-      // image.onload = () => ctx.drawImage(image, 0,0);
-      // OR
-      // This retuns slowly because it needs to return the Promise
-      // image.onload = () => {ctx.drawImage(image, 0,0);}
-      // OR
-      // This uses the canvas again, with more settings
-      // image.onload = function (){ctx.drawImage(image, 0,0);  image.style.display = "none"; 
-      // Test if one has the image data
-      // const imageData = ctx.getImageData(0, 0, IMAGE_SIZE, IMAGE_SIZE);
-      // var normalArray = Array.prototype.slice.call(imageData);
-      // const test0 = tf.tensor(normalArray);
-      // document.getElementById("outData").innerHTML = tf.max(test0);}
-      // OR
       
       image.onload = function (){
         // Convert the image element to a tensor using fromPixels
-        var tensor_image = tf.browser.fromPixels(image);
+        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
         document.getElementById("outData").innerHTML = tf.max(tensor_image);
-        const eTensor = tensor_image.expandDims(0);
+        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
         // Give image to model
         mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
       };
-      
-
-      // OR
-
-      // Way 2
-      // const image = new Image(IMAGE_SIZE, IMAGE_SIZE, 3); // Using optional size for image
-      // image.onload = drawImageActualSize; // Draw when image has loaded
-
-      // Load an image of intrinsic size (IMAGE_SIZE x IMAGE_SIZE) in CSS pixels
-      // image.src = "apple.png";
-      // image.src = "https://storage.googleapis.com/images4download0/image2.png";
-
-      // image is an image object
-
-      // ----------------------
-
-      // This did not work
-      // const tensor = tf.browser.fromPixels(image);
-
-      // OR
-
-      // Uncaught Error: pixels passed to tf.browser.fromPixels() must be either an HTMLVideoElement, HTMLImageElement, HTMLCanvasElement, ImageData in browser, or OffscreenCanvas, ImageData in webworker or {data: Uint32Array, width: number, height: number}, but was Uint8ClampedArray
-      // Uint8ClampedArray means that values are from 0-255
-      // const imageData = ctx.getImageData(0, 0, IMAGE_SIZE, IMAGE_SIZE).data;
-
-      // Uncaught Error: pixels passed to tf.browser.fromPixels() must be either an HTMLVideoElement, HTMLImageElement, HTMLCanvasElement, ImageData in browser, or OffscreenCanvas, ImageData in webworker or {data: Uint32Array, width: number, height: number}, but was Array
-
-      // Converting imageData in format Uint8Array to Uint32Array
-      // Uncaught Error: pixels passed to tf.browser.fromPixels() must be either an HTMLVideoElement, HTMLImageElement, HTMLCanvasElement, ImageData in browser, or OffscreenCanvas, ImageData in webworker or {data: Uint32Array, width: number, height: number}, but was Uint32Array
-      // const imageData1 = new Uint32Array(imageData);
-
-      // Converting the imageData to Array format
-      // var normalArray = Array.prototype.slice.call(imageData);
-
-      // Tried converting the imageData but gave errors
-      // const tensor = tf.browser.fromPixels(imageData1);
-
-      // OR
-
-      // Works
-      // const tensor_image = tf.browser.fromPixels(canvasElement);
-      // This is size 224,224,3
-
-      // ----------------------
-
-      // 200704
-      // const test0 = tf.tensor(normalArray)
-
-      // document.getElementById("outData1").innerHTML = test0;
-
-      
-      // Works!
-      // const test1 = tf.zeros([1, IMAGE_SIZE, IMAGE_SIZE, 3])
-
-      // ----------------------
-
-      // const eTensor = tensor_image.expandDims(0);
-      // This is size 1,224,224,3
-
-      // ----------------------
-
-      // return image
+    
 
     } catch (error) {
       document.getElementById("outData").innerHTML = error; 
@@ -149,53 +60,69 @@
   
   // -------------------------------------------------
 
-  async function retreive_image() {
 
-    try {
-      
-      await load_image().then(imageObj => imageObj).then(imageObj => {
+  function train_a_model(){
 
-        // imageObj is 'HTMLImageElement'
+    const model = tf.sequential();
 
-        // ----------------------
-        // Test if it has received the image
-        const tensor_image = tf.browser.fromPixels(canvasElement);
+    //create the first layer 
+    model.add(tf.layers.conv2d({
+      inputShape: [28, 224, 1],
+      kernelSize: 5,
+      filters: 8,
+      strides: 1,
+      activation: 'relu',
+      kernelInitializer: 'VarianceScaling'
+    }));
 
-        // OR
+    //create a max pooling layer 
+    model.add(tf.layers.maxPooling2d({
+      poolSize: [2, 2],
+      strides: [2, 2]
+    }));
 
-        // const tensor_image = tf.browser.fromPixels(imageObj);
-        // IndexSizeError: Index or size is negative or greater than the allowed amount
-        // Common causes for this I found were returning negative values or trying to draw the image to the canvas before the image is actually loaded. 
-        // ----------------------
+    //create the second conv layer
+    model.add(tf.layers.conv2d({
+      kernelSize: 5,
+      filters: 16,
+      strides: 1,
+      activation: 'relu',
+      kernelInitializer: 'VarianceScaling'
+    }));
 
-        const eTensor = tensor_image.expandDims(0);
+    //create a max pooling layer 
+    model.add(tf.layers.maxPooling2d({poolSize: [2, 2], strides: [2, 2]}));
 
-        // ----------------------
+    //flatten the layers to use it for the dense layers 
+    model.add(tf.layers.flatten());
 
-        document.getElementById("outData").innerHTML = tf.max(tensor_image);
+    //dense layer with output 10 units 
+    model.add(tf.layers.dense({
+      units: 2,
+      kernelInitializer: 'VarianceScaling',
+      activation: 'softmax'
+    }));
 
-        // Give image to model
-        mobilenet.load().then(model => {
-      model.classify(eTensor).then(predictions => {
-        for(var i = 0; i<predictions.length; i++){
-          outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;
-        }
-        });
-        });
-      
-      });
+    const LEARNING_RATE = 0.0001;
+    const optimizer = tf.train.adam(LEARNING_RATE);
 
+    model.compile({
+      optimizer: optimizer,
+      loss: 'categoricalCrossentropy',
+      metrics: ['accuracy'],
+    });
 
-    } catch (error) {
-      document.getElementById("outData").innerHTML = error
-    }
+    const batch = tf.zeros([BATCH_SIZE,28,28,1]);
+    const labels = tf.zeros([BATCH_SIZE, NUM_CLASSES]);
 
-    // -------------------------------------------------
+    const h = await model.fit(batch, labels,
+                {
+                  batchSize: BATCH_SIZE,
+                  validationData: validationData,
+                  epochs: BATCH_EPOCHs
+                });
 
   }
-
-
-  // -------------------------------------------------
 
 
 
