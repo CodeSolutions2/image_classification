@@ -47,8 +47,8 @@
       
       const image = new Image();
 
-      image.src = "https://storage.googleapis.com/images4download0/image2.png";
-      // image.src = "apple3D.png";
+      // image.src = "https://storage.googleapis.com/images4download0/image2.png";
+      image.src = "apple3D.png";
       // image.src = "tomatoe.png";
 
       
@@ -76,7 +76,8 @@
 
 
   async function run_edgedetection_classifer(){
-        const MODEL_URL = 'https://storage.googleapis.com/tensorflowjsmodels0/model.json';
+        // const MODEL_URL = 'https://storage.googleapis.com/tensorflowjsmodels0/model.json';
+	const MODEL_URL = 'model.json';
         const model = await tf.loadLayersModel(MODEL_URL);
     
         try {
