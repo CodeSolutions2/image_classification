@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+  
+    <!-- <img id="img" src="https://storage.googleapis.com/images4download0/image2.png" style="display:block" width="224" height="224" /> -->
+    
+    <!-- <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg" onclick="run_model()"> -->
+    <!-- <img id="img" src="apple.png" style="display:block" width="224" height="224" /> -->
+    <canvas id="canvasId" width="224" height="224" style="display:block"></canvas>
+
+
+    <button id="myBtn" onclick="tryagain()">Run Selection</button>
+
+    <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
+
+    <textarea id="outData" rows="2" cols="70" placeholder="notification" style="display:block"></textarea>
+
+    <textarea id="outData1" rows="2" cols="70" placeholder="notification" style="display:block"></textarea>
+
+
+<style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script> 
+
+  
+<script>
+
+
+  var canvasElement = document.getElementById("canvasId");
+  const ctx = canvasElement.getContext("2d");
+
+  const outp = document.getElementById('output');
+
+  // -------------------------------------------------
+
+  function tryagain(){
+
+    const img1 = new Image(); // Image constructor
+    // img1.src = "apple.png";
+    img1.src = "https://storage.googleapis.com/images4download0/image2.png";
+    img1.alt = "alt";
+    document.body.appendChild(img1);
+
+    const img2 = document.createElement("img"); // Use DOM HTMLImageElement
+    img2.src = "tomatoe.jpg";
+    img2.alt = "alt text";
+    document.body.appendChild(img2);
+
+    // using first image in the document
+    alert(document.images[0].src);
+
+
+  }
+
+
+  // -------------------------------------------------
+
+
+
+
+</script>
+</body>
+</html>
