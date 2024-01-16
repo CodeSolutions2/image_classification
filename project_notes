@@ -65,3 +65,19 @@ https://storage.googleapis.com/tensorflowjsmodels0/model.json
 # Use storage path to refer to the model
 gs://tensorflowjsmodels0/model.json
 
+
+
+
+
+# ----------------------------------------------------
+# Errors
+# ----------------------------------------------------
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://storage.googleapis.com/tensorflowjsmodels0/model.json. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 200.
+
+Uncaught (in promise) TypeError: NetworkError when attempting to fetch resource. 
+
+# ----------------------------------------------------
+
+Uncaught (in promise) Error: Unknown layer: TFOpLambda. This may be due to one of the following reasons:
+1. The layer is defined in Python, in which case it needs to be ported to TensorFlow.js or your JavaScript code.
+2. The custom layer is defined in JavaScript, but is not registered properly with tf.serialization.registerClass().
