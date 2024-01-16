@@ -70,7 +70,7 @@
       // return error
     }
     
-  }  // end of load_image
+  }  // end of run_mobilenet
   
   // -------------------------------------------------
 
@@ -99,12 +99,13 @@
             // Give image to model
             const result = model.predict(eTensor); 
             outp.innerHTML = result;
-          }); 
+          }; 
         } catch (error) {
           document.getElementById("outData").innerHTML = error; 
           // return error
         }
-	}
+	  
+  }  // end of run_edgedetection_classifer
 
 
 
