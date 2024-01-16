@@ -1,0 +1,67 @@
+
+
+
+Transfer the model.json file to google storage
+
+
+gcloud iam service-accounts keys list --iam-account=$SERVICE_ACCOUNT
+
+# ----------------------------------------------------
+
+# Enable key
+https://cloud.google.com/iam/docs/keys-disable-enable#disabling
+
+gcloud iam service-accounts keys enable 8add055e4f0c07611c5bcb1f2eb978378f57688b --iam-account=$SERVICE_ACCOUNT --project=$PROJECT_ID
+
+# ----------------------------------------------------
+
+cat key.json
+
+copy-paste text inside key.json
+
+clear
+
+# ----------------------------------------------------
+
+# [Step 2]
+# ---------------------------
+# On Kaggle run three cells
+# ---------------------------
+%%bash --err null
+cat > key.json <<EOF
+{
+  "type": "service_account",
+  "project_id": "textprocessing1",
+  "private_key_id": "b2c9a6f7779ab4b3bdf1346bbbe8b5b539a35b1b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCoajVaKbscEAfq\n8FKXFREp0wh6QRDX7LTEE/znOkAUJ4jdCakCeqfNurgFXLXrDg2pjfX+p/aHrq/4\nKnXygF5ApKcCOAXnOR/ek4Rrm3tSGxa4Ez6fBnAmONUciGZZflHc8NHb6Z65xNUe\nwWIq7j/ka7ltK0StGGoo4TRiCSPTlS+q3psO96egDFokDvLV1SMcwuhDSLdRlAiQ\n8cXSS4y/Ll38FvsghosMMicdJ8KQDPPHLZh0+gPmkUvnMb+nkWGiqYueN+uUhVLS\n3NtyEky5eoZqyqEHMRTKs8VpliTfPoSmyRa/lvFlCgwxYbwKO4sKCbMkqcZTyo6e\nyK+i1JjfAgMBAAECggEAALt750ztU93ptnt9Dis2WcLqMtPX0O1I1RhOt+b2AuN5\nH4SQm5WK53kroN7pk67gpb3SixPO6nzHfK32jTBJt2tGlYC5Zdj2WwLpcJ5ac5SS\nRXG8K47/OkWIReJZH76KyQKuNFp1oKQS5pclpRvmVJlxftkkGdObJLV9UCPJWXfw\nZyOGt8WtqVA9UIEAXAzKNRFqBs1op91OE8hxcBusPgnVDxOU4UmN8HSNxB+c1hph\nz+1zsgMx7wKXGwqLBBU6yU0ZYPgm3XncevfSsve/6+02B72so/SpSv2X7I/o4zet\nCNz/+aAPGQMDSmgbl41fVz39VhdXBaR8QbgENa5aQQKBgQDctWTFB0FzBpslOLxC\nFMxvouPNN90RpPWheFR/I7nJN6ChbWW6h3HBEAt+stndakW1rpkOjB8X27yEPHdQ\nxLN/hbuZwSmoSf7RR+dy+jj4EH+0ZK+srAE1tfQ5zfJe0RV6EKKcENnfWi3PMVmX\nVawk9w/da60H7HhbeJGWt4Jd2QKBgQDDWDIndCztZ0d1eYxuWMJ5EgL10vOK5lT3\nsNqP/9YprdSHAg31j12wH3wygCoPX7I9OBLOoBuT7f3/JL9TnXzKR/G7NDVAUrxj\n80v1aV1BEasBuhgdJ1Z6rygsN316xKmwADfuYjElRTnVB9xtsazC8Vccwl9BcHSY\njEmoUPIhdwKBgEq5y7V94GX+jZbLn8nL2u/NOc2opVus+1FBOXKWePessuEU9gVy\niEwyj4HFMkhqC9IYnE+1l21vg2NOSaN6BcAeWkcThHQrIXBgJPfjylgK1gIQuP4A\neqRhx5+un+oEZn4elb+7YNjjYnEtJ0U6x374e1GffEUbhiCKMNjTpvr5AoGAKbuA\n0371Ti6fTJCQGM7rlRPs//l2QDle85+bweHFLhhN7B3bP5fGSyce0GcjFS+7k2qU\nUgJQgfT5K3X9Te66RzjBgt3vdnN2fd/vXVmKK6mLoA3Ssv/BcOpUqcWdEApNuiUB\nzfK6Tx0P8twAEos/vlHy61j3IrLUpfZqkgPhBpcCgYA3l9o1rZ7NSYzJMSSRMEBy\n7tFdpH8vSgtbvzXV3pVITdm8PGbflOOy+iqlj4dtDAIiy3ybxsCWfwZi+2juuYsO\nFgVT6gIx+leMU1iX12vYz/8JzDxPPESzXmYnXABEVA84uNVHRftTcFvjFEjbJzQi\nx5i7Xx4ymrN7qA1vj34mjQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "send2bucket@textprocessing1.iam.gserviceaccount.com",
+  "client_id": "100920532448837010632",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/send2bucket%40textprocessing1.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+EOF
+
+# View storage buckets
+gcloud storage ls
+
+export BUCKET_NAME=$(echo "tensorflowjsmodels0")
+
+# Create a bucket
+export LOCATION=$(echo "europe-west9")
+# https://cloud.google.com/storage/docs/uniform-bucket-level-access
+gcloud storage buckets create gs://$BUCKET_NAME --project=$PROJECT_ID --default-storage-class=STANDARD --location=$LOCATION 
+
+gcloud storage cp model.json gs://tensorflowjsmodels0/
+
+# Make data be accessable 
+gcloud storage objects update gs://$BUCKET_NAME/model.json --add-acl-grant=entity=AllUsers,role=READER
+
+# Use the https path to refer to the model
+https://storage.googleapis.com/tensorflowjsmodels0/model.json
+
+# Use storage path to refer to the model
+gs://tensorflowjsmodels0/model.json
+
