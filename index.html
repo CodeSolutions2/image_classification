@@ -4,13 +4,14 @@
 <body>
   
     <!-- <img id="img" src="https://storage.googleapis.com/images4download0/image2.png" style="display:block" width="224" height="224" /> -->
-    
-    <!-- <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg" onclick="run_model()"> -->
     <!-- <img id="img" src="apple.png" style="display:block" width="224" height="224" /> -->
-    <canvas id="canvasId" width="224" height="224" style="display:block"></canvas>
+    <!-- OR -->
+    <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg">
+    <!-- OR -->
+    <!-- <canvas id="canvasId" width="224" height="224" style="display:block"></canvas> -->
 
 
-    <button id="myBtn" onclick="retreive_image()">Run Selection</button>
+    <button id="myBtn" onclick="load_image()">Run Selection</button>
 
     <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
 
@@ -30,8 +31,8 @@
 
   
 <script>
-  var canvasElement = document.getElementById("canvasId");
-  const ctx = canvasElement.getContext("2d");
+  // var canvasElement = document.getElementById("canvasId");
+  // const ctx = canvasElement.getContext("2d");
 
   const outp = document.getElementById('output');
 
@@ -45,37 +46,55 @@
 
     try {
 
+      // Get the input element
+      var input = document.getElementById('img_input');
+
+      // Create a new FileReader instance
+      var reader = new FileReader();
+
+      // Set up the onload event handler
+      reader.onload = function() {
       // ----------------------
 
-      // Load image on canvas: the canvas allows one to manipulate the image values as an array/matrix
+        // Load image on canvas: the canvas allows one to manipulate the image values as an array/matrix
+        // Way 0
+        // Throws an error without a trigger (can only load image with EventListener or onload)
+        // image.addEventListener("load", (e) => { ctx.drawImage(image, 0,0); image.style.display = "none"; });
+  
+        // OR
+  
+        // Way 1
+        const image = new Image();
+  
+        // image.src = "https://storage.googleapis.com/images4download0/image2.png";
+        // image.src = "apple.png";
+        image.src = "tomatoe.png";
+  
+        // This returns quickly
+        // image.onload = () => ctx.drawImage(image, 0,0);
+        // OR
+        // This retuns slowly because it needs to return the Promise
+        // image.onload = () => {ctx.drawImage(image, 0,0);}
+        // OR
+        // This uses the canvas again, with more settings
+        // image.onload = function (){ctx.drawImage(image, 0,0);  image.style.display = "none"; 
+        // Test if one has the image data
+        // const imageData = ctx.getImageData(0, 0, IMAGE_SIZE, IMAGE_SIZE);
+        // var normalArray = Array.prototype.slice.call(imageData);
+        // const test0 = tf.tensor(normalArray);
+        // document.getElementById("outData").innerHTML = tf.max(test0);}
+        // OR
+        
+        image.onload = function (){
+          // Convert the image element to a tensor using fromPixels
+          var tensor = tf.browser.fromPixels(image);
+          document.getElementById("outData").innerHTML = tf.max(tensor)
+        };
 
-      // Way 0
-      // Throws an error without a trigger (can only load image with EventListener or onload)
-      // image.addEventListener("load", (e) => { ctx.drawImage(image, 0,0); image.style.display = "none"; });
+      };
 
-      // OR
-
-      // Way 1
-      const image = new Image();
-
-      // image.src = "https://storage.googleapis.com/images4download0/image2.png";
-      // image.src = "apple.png";
-      image.src = "tomatoe.png";
-
-      // This returns quickly
-      // image.onload = () => ctx.drawImage(image, 0,0);
-      // OR
-      // This retuns slowly because it needs to return the Promise
-      // image.onload = () => {ctx.drawImage(image, 0,0);}
-      // OR
-      image.onload = function (){ctx.drawImage(image, 0,0);  image.style.display = "none"; 
-      // Test if one has the image data
-      const imageData = ctx.getImageData(0, 0, IMAGE_SIZE, IMAGE_SIZE);
-      // var normalArray = Array.prototype.slice.call(imageData);
-      // const test0 = tf.tensor(normalArray);
-      // document.getElementById("outData").innerHTML = tf.max(test0);
-      }
-
+      // Read the contents of the input as a data URL
+      reader.readAsDataURL(input.files[0]);
       
 
       // OR
@@ -137,11 +156,11 @@
 
       // ----------------------
 
-      return image
+      // return image
 
     } catch (error) {
       document.getElementById("outData").innerHTML = error; 
-      return error
+      // return error
     }
     
   }  // end of load_image
