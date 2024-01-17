@@ -36,7 +36,7 @@
   const ctx = canvasElement.getContext("2d");
 
   var canvasElement2 = document.getElementById("canvasId2");
-  const ctx2 = canvasElement.getContext("2d");
+  const ctx2 = canvasElement2.getContext("2d");
   
   const outp = document.getElementById('output');
 
@@ -125,7 +125,7 @@
             // Give image to model
             //const result = model.predict(image_filter); 
             //outp.innerHTML = result;
-          }; 
+          };  // end of image.onload
         //} catch (error) {
         //  document.getElementById("outData").innerHTML = error; 
           // return error
