@@ -102,8 +102,8 @@
             const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
             document.getElementById("outData").innerHTML = 'image_4D';
 	    
-            image_4D = tf.cast(image_4D, 'float32')
-            const image_filter = tf.conv2d(image_4D, k_rgb_values, 1, 'same')
+            const image_4D_float = tf.cast(image_4D, 'float32')
+            const image_filter = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same')
             document.getElementById("outData").innerHTML = 'image_filter';
 
 	    // Draw image on canvas
