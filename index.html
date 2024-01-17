@@ -96,7 +96,7 @@
             // Convert the image element to a tensor using fromPixels
             var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
 	    document.getElementById("outData").innerHTML = 'tensor_image';
-	    const k_rgb_values = tf.tensor([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]])
+	    const k_rgb_values = tf.tensor4d([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]]);
 	    document.getElementById("outData").innerHTML = 'k_rgb_values';
 		  
             //const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
