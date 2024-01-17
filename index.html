@@ -83,8 +83,8 @@
           const image = new Image();
     
           // image.src = "https://storage.googleapis.com/images4download0/image2.png";
-          image.src = "apple3D.png";
-          // image.src = "tomatoe.png";
+          //image.src = "apple3D.png";
+          image.src = "tomatoe3D.png";
     
           
           
@@ -110,17 +110,19 @@
             document.getElementById("outData").innerHTML = shape_out;
             // 1,276,250,1
 
-            //const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
-            
-            // Draw image on canvas
+            // -----------------------------------------------
+            // Draw edge detection image on canvas
+            const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
 	    //tf.browser.toPixels(edge_image_tensor, canvasElement2).then(() => {
 		//  const imgElement = document.createElement('img');
 		//  imgElement.src = canvasElement2.toDataURL();
 		//  document.body.appendChild(imgElement);
 		//});
 	    // Convert the cropped tensor back to an image
-            // const croppedImage = tf.browser.toPixels(edge_image_tensor.squeeze(), document.getElementById('canvasId2'));
-
+            const edge_image_view = tf.browser.toPixels(edge_image_tensor, document.getElementById('canvasId2'));
+            ctx2.drawImage(edge_image_view, 0,0);
+            // -----------------------------------------------
+		  
 	    // Ensure that tensor is 4d
             const x = tf.reshape(image_filter, [1, shape_out[1], shape_out[2], shape_out[3]])
 
