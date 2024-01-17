@@ -9,7 +9,7 @@
     <!-- Makes a selection file reader from the PC only, not from the cloud -->
     <!-- <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg"> -->
 
-    <canvas id="canvasId" width="512" height="512" style="display:block"></canvas>
+    <canvas id="canvasId" width="224" height="224" style="display:block"></canvas>
     <canvas id="canvasId2" width="224" height="224" style="display:block"></canvas>
 	
     <button id="myBtn" onclick="run_mobilenet()">mobilenet</button>
@@ -98,38 +98,45 @@
           image.onload = function (){
             // Draw image on canvas
             ctx.drawImage(image, 0,0);
+		  
             // Convert the image element to a tensor using fromPixels
             var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-	    document.getElementById("outData").innerHTML = 'tensor_image';
+	    
 	    const k_rgb_values = tf.tensor4d([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]], shape=[3, 3, 3, 1], dtype='float32');
-	    document.getElementById("outData").innerHTML = 'k_rgb_values';
 		  
             const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
-            document.getElementById("outData").innerHTML = 'image_4D';
 	    
             const image_4D_float = tf.cast(image_4D, 'float32')
             const image_filter = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same')
-            document.getElementById("outData").innerHTML = 'image_filter';
 
             const shape_out = image_filter.shape
             document.getElementById("outData").innerHTML = shape_out;
             // 1,276,250,1
 
-            const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
+            //const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
             
             // Draw image on canvas
-	    tf.browser.toPixels(edge_image_tensor, canvasElement2).then(() => {
-		  const imgElement = document.createElement('img');
-		  imgElement.src = canvasElement2.toDataURL();
-		  document.body.appendChild(imgElement);
-		});
+	    //tf.browser.toPixels(edge_image_tensor, canvasElement2).then(() => {
+		//  const imgElement = document.createElement('img');
+		//  imgElement.src = canvasElement2.toDataURL();
+		//  document.body.appendChild(imgElement);
+		//});
+	    // Convert the cropped tensor back to an image
+            // const croppedImage = tf.browser.toPixels(edge_image_tensor.squeeze(), document.getElementById('canvasId2'));
 
-		  
+	    // Ensure that tensor is 4d
             const x = tf.reshape(image_filter, [1, shape_out[1], shape_out[2], shape_out[3]])
 
-	
+		  const boxes = tf.tensor2d([[0.25, 0.25, 0.75, 0.75]], [1, 4]);
+            const boxIndices = tf.tensor1d([0], 'float32');
+            const newSize = [512, 512];
+            const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
+		  
+		const shape_out = resizedTensor.shape
+            document.getElementById("outData").innerHTML = shape_out;
+		  
             // Give image to model
-            const result = model.predict(x); 
+            const result = model.predict(resizedTensor); 
             outp.innerHTML = result;
 		  
           };  // end of image.onload
