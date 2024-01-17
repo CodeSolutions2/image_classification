@@ -122,7 +122,7 @@
             // ctx2.drawImage(edge_image, 0,0);
 
 		  
-            const x = tf.reshape(x, [1, shape_out[1], shape_out[2], shape_out[3]])
+            const x = tf.reshape(image_filter, [1, shape_out[1], shape_out[2], shape_out[3]])
 		  
             // Give image to model
             const result = model.predict(x); 
