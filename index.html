@@ -115,8 +115,10 @@
             document.getElementById("outData").innerHTML = shape_out;
             // 1,276,250,1
 
-            const edge_image = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
+            const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
+            
             // Draw image on canvas
+	    const edge_image = tf.browser.toPixels (edge_image_tensor, ctx2)
             ctx2.drawImage(edge_image, 0,0);
 
 		  
