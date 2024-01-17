@@ -108,9 +108,8 @@
 	    
             const image_4D_float = tf.cast(image_4D, 'float32')
             const image_filter = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same') / 255;
-
-            const shape_out = image_filter.shape
-            document.getElementById("outData").innerHTML = shape_out;
+		  
+            document.getElementById("outData").innerHTML = image_filter.shape;
             // 1,276,250,1
 
             //const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
@@ -132,8 +131,7 @@
             const newSize = [512, 512];
             const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
 		  
-		const shape_out = resizedTensor.shape
-            document.getElementById("outData").innerHTML = shape_out;
+            document.getElementById("outData").innerHTML = resizedTensor.shape;
 		  
             // Give image to model
             const result = model.predict(resizedTensor); 
