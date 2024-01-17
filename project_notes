@@ -249,9 +249,128 @@ push_pull_changes_from_PC_to_a_repo_branch(){
 	cd $cur_path
 }
 EOF
+
+# ----------------------------------------------------
+
+%%bash --err null
+cd /kaggle/working
+cat > git_push_pull.sh <<EOF
+    #!/bin/bash
+    export cur_path=$(pwd)
+    echo "cur_path:"
+    echo $cur_path
+
+    # ***** CHANGE ONLY *****
+    export folder_path=$(echo "/kaggle/working")
+    export NOMDEREPO=$(echo "test_4_webapps")
+    export username=$(echo "CodeSolutions2")
+    export useremail=$(echo "j622amilah@gmail.com")
+    # export connection_method=$(echo "HTTPS")  # SSH or HTTPS
+    connection_method="HTTPS"
+
+    # Name of folder where the repository is located
+    export folder_name=$(echo "git2")
+
+    # Name of the branch to use to make changes to the repository
+    export branch_name=$(echo "main")   # the name can be anything but 'master'
+
+    # Configure file Settings
+    echo 'connection_method'
+    echo $connection_method
+    if [[ $connection_method = "HTTPS"]]
+    then
+         # HTTPS
+         export URL=$(echo "https://github.com/$username/$NOMDEREPO.git")  # HTTPS
+    else
+         
+         export URL=$(echo "git@github.com:$username/$NOMDEREPO.git")  # SSH
+    fi
+    # ***** CHANGE ONLY *****
+
+    # Define existing PATHS: Set repo and path variables
+    export folder_path_outside_git_dir=$(echo "$folder_path/$folder_name")
+    export git_dir_folder_path=$(echo "$folder_path_outside_git_dir/$NOMDEREPO")
+
+    # Configure settings file
+    git config --global user.name $username
+    git config --global user.email $useremail
+    git config --global remote.origin.url $URL
+
+    # Create a new folder to do git pull from the old repo files
+    export folder_TEMP=$(echo "_pulled_folder")
+    export folder_path_outside_git_dir_TEMP=$(echo "$folder_path/$folder_name$folder_TEMP")
+    export git_dir_folder_path_TEMP=$(echo "$folder_path_outside_git_dir_TEMP/$NOMDEREPO")
+
+    # PULL from repo : one must pull to a new folder, or else it will copy over your files that you changed
+    echo 'Pulling repo from GitHub'
+    # Should be outside the git directory when initializing a local directory
+    mkdir $folder_path_outside_git_dir_TEMP
+    cd $folder_path_outside_git_dir_TEMP
+
+    mkdir $git_dir_folder_path_TEMP
+
+    # Should be in the git directory when pulling files
+    cd $git_dir_folder_path_TEMP
+
+    # Initialize the local directory and set the initial branch name to main
+    git init -b $branch_name
+
+    # Pull Repository from github first, while synchronizing the branches
+    git pull origin $branch_name --allow-unrelated-histories
+
+
+    # Delete all the file except .git
+    mv .git $folder_path_outside_git_dir_TEMP
+    cd $folder_path_outside_git_dir_TEMP
+    rm -rf $git_dir_folder_path_TEMP
+    mkdir $git_dir_folder_path_TEMP
+    mv .git $git_dir_folder_path_TEMP
+
+    # Remove .git from old folder; Leave the .git in the git2_pulled_folder because it gives the state of the files on the GitHub repo, we want to update this with the GitHub commands
+    cd $git_dir_folder_path
+    rm -rf .git
+
+    # Copy the new files from my PC to the temp folder
+    cp -a $git_dir_folder_path/. $git_dir_folder_path_TEMP
+    cd $git_dir_folder_path_TEMP
+
+    # PUSH to repo on the main branch
+    echo 'Pushing changes back to repo'
+    # Should be in git directory when adding files to be updated
+    cd $git_dir_folder_path_TEMP
+    git add .     # (if you want to add everything in the local repository that was specified in the config file)
+
+    # Should be in git directory when commiting files
+    git commit -m "comment"
+
+    # Should be in git directory when pushing files to the main branch
+    git push origin $branch_name
+
+
+    # Rename the OLD folder as something to delete (automatic deleting can be dangerous)
+    mv $folder_path_outside_git_dir $1/git2_OLD_to_delete
+
+    # Rename new folder as the old folder
+    mv $folder_path_outside_git_dir_TEMP $folder_path_outside_git_dir
+
+    # Return to the orginal path, instead of staying in the push path
+    cd $cur_path
+EOF
+
+# ----------------------------------------------------
+
+!chmod +x git_push_pull.sh
+!./git_push_pull.sh
+
 # ----------------------------------------------------
 
 
+# ----------------------------------------------------
 
+
+# ----------------------------------------------------
+
+
+# ----------------------------------------------------
 
 
