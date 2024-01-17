@@ -44,17 +44,13 @@
 
   async function run_mobilenet() {
 
-    var IMAGE_SIZE = 224;
-    
-    // ----------------------
-
     try {
       
       const image = new Image();
 
       // image.src = "https://storage.googleapis.com/images4download0/image2.png";
       image.src = "apple3D.png";
-      // image.src = "tomatoe.png";
+      // image.src = "tomatoe3D.png";
 
       
       
@@ -108,8 +104,9 @@
 	    
             const image_4D_float = tf.cast(image_4D, 'float32')
             const image_filter = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same') / 255;
+	    const shape_out = image_filter.shape;
 		  
-            document.getElementById("outData").innerHTML = image_filter.shape;
+            document.getElementById("outData").innerHTML = shape_out;
             // 1,276,250,1
 
             //const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
