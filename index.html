@@ -10,6 +10,8 @@
     <!-- <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg"> -->
 
     <canvas id="canvasId" width="224" height="224" style="display:block"></canvas>
+    <canvas id="canvasId2" width="224" height="224" style="display:block"></canvas>
+	
     <button id="myBtn" onclick="run_mobilenet()">mobilenet</button>
     <button id="myBtn" onclick="run_edgedetection_classifer()">edgedetection_classifer</button>
   
@@ -32,6 +34,9 @@
   // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
   var canvasElement = document.getElementById("canvasId");
   const ctx = canvasElement.getContext("2d");
+
+  var canvasElement2 = document.getElementById("canvasId2");
+  const ctx2 = canvasElement.getContext("2d");
   
   const outp = document.getElementById('output');
 
@@ -112,7 +117,7 @@
 
             const edge_image = tf.reshape(x, [shape_out[1], shape_out[2], shape_out[3]])
             // Draw image on canvas
-            ctx.drawImage(edge_image, 0,0);
+            ctx2.drawImage(edge_image, 0,0);
 
 		  
             //const x = tf.reshape(x, [1, 512, 512, 1])
