@@ -106,16 +106,19 @@
             const image_filter = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same')
             document.getElementById("outData").innerHTML = 'image_filter';
 
-	    // Draw image on canvas
-            // ctx.drawImage(image, 0,0);
-		  
             const shape_out = image_filter.shape
             document.getElementById("outData").innerHTML = shape_out;
+            # 1,276,250,1
+
+            const edge_image = tf.reshape(x, [shape_out[1], shape_out[2], shape_out[3]])
+            // Draw image on canvas
+            ctx.drawImage(edge_image, 0,0);
+
 		  
             //const x = tf.reshape(x, [1, 512, 512, 1])
 		  
             // Give image to model
-            //const result = model.predict(eTensor); 
+            //const result = model.predict(image_filter); 
             //outp.innerHTML = result;
           }; 
         //} catch (error) {
