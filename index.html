@@ -52,8 +52,6 @@
       image.src = "apple3D.png";
       // image.src = "tomatoe3D.png";
 
-      
-      
       image.onload = function (){
         // Draw image on canvas
         ctx.drawImage(image, 0,0);
@@ -65,7 +63,6 @@
         mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
       };
     
-
     } catch (error) {
       document.getElementById("outData").innerHTML = error; 
       // return error
