@@ -80,7 +80,7 @@
 	// const MODEL_URL = 'model.json';
         // const model = await tf.loadLayersModel(MODEL_URL);
     
-        try {
+        //try {
           
           const image = new Image();
     
@@ -93,7 +93,6 @@
           image.onload = function (){
             // Draw image on canvas
             ctx.drawImage(image, 0,0);
-		  
             // Convert the image element to a tensor using fromPixels
             var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
 	    document.getElementById("outData").innerHTML = 'tensor_image';
@@ -116,10 +115,10 @@
             //const result = model.predict(eTensor); 
             //outp.innerHTML = result;
           }; 
-        } catch (error) {
-          document.getElementById("outData").innerHTML = error; 
+        //} catch (error) {
+        //  document.getElementById("outData").innerHTML = error; 
           // return error
-        }
+        //}
 	  
   }  // end of run_edgedetection_classifer
 
