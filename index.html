@@ -122,10 +122,10 @@
             // ctx2.drawImage(edge_image, 0,0);
 
 		  
-            //const x = tf.reshape(x, [1, 512, 512, 1])
+            const x = tf.reshape(x, [1, shape_out[1], shape_out[2], shape_out[3]])
 		  
             // Give image to model
-            const result = model.predict(edge_image_tensor); 
+            const result = model.predict(x); 
             outp.innerHTML = result;
           };  // end of image.onload
         //} catch (error) {
