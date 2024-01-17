@@ -93,10 +93,27 @@
           image.onload = function (){
             // Draw image on canvas
             ctx.drawImage(image, 0,0);
+		  
             // Convert the image element to a tensor using fromPixels
             var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-            
-            const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+
+	    const k_rgb_values = tf.constant([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],
+        [[-1000.], [-1000.], [-1000.]]],
+       [[[ 1000.], [ 1000.], [ 1000.]],
+        [[    0.], [    0.], [    0.]],
+        [[-1000.], [-1000.], [-1000.]]],
+       [[[ 1000.], [ 1000.], [ 1000.]],
+        [[    0.], [    0.], [    0.]],
+        [[-1000.], [-1000.], [-1000.]]]], dtype=tf.float32)
+		  
+            const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
+
+            const image_filter = tf.conv2d(image_4D, k_rgb_values, 1, 'same')
+            const shape_out = image_filter.shape
+            document.getElementById("outData").innerHTML = shape_out;
+		  
+            const x = tf.reshape(x, [1, 512, 512, 1])
+		  
             // Give image to model
             const result = model.predict(eTensor); 
             outp.innerHTML = result;
