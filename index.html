@@ -82,8 +82,8 @@
 
   async function run_edgedetection_classifer(){
         // const MODEL_URL = 'https://storage.googleapis.com/tensorflowjsmodels0/model.json';
-	// const MODEL_URL = 'model.json';
-        // const model = await tf.loadLayersModel(MODEL_URL);
+	const MODEL_URL = 'model.json';
+        const model = await tf.loadLayersModel(MODEL_URL);
     
         //try {
           
@@ -118,15 +118,15 @@
             const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
             
             // Draw image on canvas
-	    const edge_image = tf.browser.toPixels (edge_image_tensor, ctx2)
-            ctx2.drawImage(edge_image, 0,0);
+	    const edge_image = tf.browser.toPixels(edge_image_tensor, ctx2)
+            // ctx2.drawImage(edge_image, 0,0);
 
 		  
             //const x = tf.reshape(x, [1, 512, 512, 1])
 		  
             // Give image to model
-            //const result = model.predict(image_filter); 
-            //outp.innerHTML = result;
+            const result = model.predict(edge_image_tensor); 
+            outp.innerHTML = result;
           };  // end of image.onload
         //} catch (error) {
         //  document.getElementById("outData").innerHTML = error; 
