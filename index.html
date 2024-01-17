@@ -9,7 +9,7 @@
     <!-- Makes a selection file reader from the PC only, not from the cloud -->
     <!-- <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg"> -->
 
-    <canvas id="canvasId" width="224" height="224" style="display:block"></canvas>
+    <canvas id="canvasId" width="512" height="512" style="display:block"></canvas>
     <canvas id="canvasId2" width="224" height="224" style="display:block"></canvas>
 	
     <button id="myBtn" onclick="run_mobilenet()">mobilenet</button>
@@ -118,15 +118,20 @@
             const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
             
             // Draw image on canvas
-	    const edge_image = tf.browser.toPixels(edge_image_tensor, ctx2)
-            // ctx2.drawImage(edge_image, 0,0);
+	    tf.browser.toPixels(edge_image_tensor, canvasElement2).then(() => {
+		  const imgElement = document.createElement('img');
+		  imgElement.src = canvasElement2.toDataURL();
+		  document.body.appendChild(imgElement);
+		});
 
 		  
             const x = tf.reshape(image_filter, [1, shape_out[1], shape_out[2], shape_out[3]])
-		  
+
+	
             // Give image to model
             const result = model.predict(x); 
             outp.innerHTML = result;
+		  
           };  // end of image.onload
         //} catch (error) {
         //  document.getElementById("outData").innerHTML = error; 
