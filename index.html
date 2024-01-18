@@ -61,10 +61,16 @@
 	
   // Way 0: eventlistener
   const selectElement = document.getElementById('select_this_image');
-  selectElement.addEventListener("change", () => {
+  selectElement.addEventListener("click", () => {
      document.getElementById("select_model").style.display = "block";
      document.getElementById("run_mobilenet_button").style.display = "block";
      document.getElementById("run_edgedetection_classifer_button").style.display = "block";
+  });
+
+  selectElement.addEventListener("change", (event) => {
+     //var selected_image = document.getElementById("select_this_image").value;
+	  // OR
+	  const selected_image = event.target.value;
   });
 
   // OR
@@ -79,8 +85,6 @@
   // -------------------------------------------------
 
   function load_image_basedOn_selection() {
-	  
-	var selected_image = document.getElementById("select_this_image").value;
 	  
     	if (selected_image == 'apple') {
           load_image = "apple3D.png";
@@ -187,7 +191,8 @@
 		  
          //     ctx2.putImageData(edge_image_view, 0,0);
 	    // Uncaught TypeError: CanvasRenderingContext2D.drawImage: Argument 1 could not be converted to any of: HTMLImageElement, SVGImageElement, HTMLCanvasElement, HTMLVideoElement, OffscreenCanvas, ImageBitmap, VideoFrame.
-            // -----------------------------------------------
+            
+	    // -----------------------------------------------
 		  
 	    // Ensure that tensor is 4d
             const x = tf.reshape(image_filter, [1, shape_out[1], shape_out[2], shape_out[3]])
