@@ -15,8 +15,8 @@
 <!-- Drop down menu: Select image to classify -->
    <label for="select_image">Select an image to classsify/label:</label>
    <select name="select_image_list" id="select_image_list">
-        <option value="apple" id="select_image0">apple</option>
-        <option value="tomatoe" id="select_image1">tomatoe</option>
+        <option value="tomatoe" id="select_this_image">tomatoe</option>
+        <option value="apple" id="select_this_image">apple</option>
    </select> 
 
 <!-- <button id="select_image_button" onclick="selectImage()" style="display:block">Select image</button> -->
@@ -60,7 +60,7 @@
   // -------------------------------------------------
 	
   // Way 0: eventlistener
-  select_image0.addEventListener("click", () => {
+  select_this_image.addEventListener("click", () => {
      document.getElementById("select_model").style.display = "block";
      document.getElementById("run_mobilenet_button").style.display = "block";
      document.getElementById("run_edgedetection_classifer_button").style.display = "block";
@@ -124,7 +124,7 @@ select_image1.addEventListener("click", () => {
       };
     
     } catch (error) {
-      document.getElementById("outData").innerHTML = error; 
+      outp.innerHTML = error; 
     }
     
   }  // end of run_mobilenet
