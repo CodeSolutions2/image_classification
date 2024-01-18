@@ -127,7 +127,7 @@
 
 	image.src = await load_image_basedOn_selection();
           
-	image.onload = function (){
+	image.onload = async function (){
 		  
             // Draw image on canvas
             document.getElementById("canvasId").style.display = "block";
