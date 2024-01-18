@@ -166,26 +166,35 @@
             document.getElementById("canvasId2").style.display = "block";
 		  
             const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
-		  
+
+	    // ----------------------- try 0 -----------------------
 	    // Convert the cropped tensor back to an image
-            // const edge_image_view = tf.browser.toPixels(edge_image_tensor, document.getElementById('canvasId2'));
-		  // OR
+            const edge_image_view = tf.browser.toPixels(edge_image_tensor, document.getElementById('canvasId2'));
+
+		ctx2.drawImage(edge_image_view, 0,0);
 		
-		  // Create a new Uint8ClampedArray from the tensor values
-   		  const data = new Uint8ClampedArray(edge_image_tensor);
+            // ----------------------- try 1 -----------------------
+            // Create a new Uint8ClampedArray from the tensor values
+            // const data = new Uint8ClampedArray(edge_image_tensor);
 
-  // Create a new ImageData object with the tensor shape
-  const { width, height } = edge_image_tensor.shape;
-  const imageData = new ImageData(data, width, height);
+            // Create a new ImageData object with the tensor shape
+            // const { width, height } = edge_image_tensor.shape;
+            // const imageData = new ImageData(data, width, height);
 
-	// Draw the ImageData onto the canvas
-  ctx2.putImageData(imageData, 0, 0);
+            // Draw the ImageData onto the canvas
+            // ctx2.putImageData(imageData, 0, 0);
+            // Uncaught DOMException: An attempt was made to use an object that is not, or is no longer, usable
 
-		// Create a new Image element
+				// Create a new Image element
   //const imageElement = new Image();
   
   // Set the source of the Image element to the data URL of the canvas
-  //imageElement.src = canvasId2.toDataURL();
+  //imageElement.src = canvasId2.toDataURL();  
+
+		
+		
+		
+
             
 	    // -----------------------------------------------
 		  
