@@ -14,11 +14,11 @@
 <!-- Drop down menu: Select image to classify -->
    <label for="select_image">Select an image to classsify/label:</label>
    <select name="select_image_list" id="select_image_list">
-        <option value="apple">apple</option>
-        <option value="tomatoe">tomatoe</option>
+        <option value="apple" id="select_this_image">apple</option>
+        <option value="tomatoe" id="select_this_image">tomatoe</option>
    </select> 
 
-   <button id="select_image_button" onclick="selectImage()" style="display:block">Select image</button>
+<!-- <button id="select_image_button" onclick="selectImage()" style="display:block">Select image</button> -->
 	
 <!-- Select model to classify -->
    <h2 id="select_model" style='text-align: left; display:none'>Select different models to classify the image</h2>
@@ -58,14 +58,24 @@
   const outp = document.getElementById('output');
 
   // -------------------------------------------------
-
-  select_image_list.addEventListener("click", () => {
+	
+  // Way 0: eventlistener
+  select_this_image.addEventListener("click", () => {
      document.getElementById("select_model").style.display = "block";
      document.getElementById("run_mobilenet_button").style.display = "block";
      document.getElementById("run_edgedetection_classifer_button").style.display = "block";
   });
-		
 
+  // OR
+
+  // Way 1: onclick
+  // function selectImage() {
+  //    document.getElementById("select_model").style.display = "block";
+  //   document.getElementById("run_mobilenet_button").style.display = "block";
+  //    document.getElementById("run_edgedetection_classifer_button").style.display = "block";
+  // }
+	
+  // -------------------------------------------------
 
   // -------------------------------------------------
 	
