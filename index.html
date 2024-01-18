@@ -77,19 +77,33 @@
 	
   // -------------------------------------------------
 
+  function load_image_basedOn_selection() {
+	  
+	var selected_image = document.getElementById("select_this_image").value;
+	  
+    	if (selected_image == 'apple') {
+          load_image = "apple3D.png";
+	} else if (prompt_topic == 'tomatoe') {
+          load_image = "tomatoe3D.png";
+	} else {
+          load_image = "tomatoe3D.png";
+	  // load_image = "https://storage.googleapis.com/images4download0/image2.png";
+	} 
+    return load_image
+  }
+	
   // -------------------------------------------------
 	
   async function run_mobilenet() {
 
     document.getElementById("canvasId").style.display = "block";
+
 	  
     try {
       
       const image = new Image();
 
-      // image.src = "https://storage.googleapis.com/images4download0/image2.png";
-      image.src = "apple3D.png";
-      // image.src = "tomatoe3D.png";
+      image.src = load_image_basedOn_selection();
 
       image.onload = function (){
         // Draw image on canvas
@@ -112,26 +126,20 @@
   // -------------------------------------------------
 
   async function run_edgedetection_classifer(){
-
-	document.getElementById("canvasId").style.display = "block";
-	document.getElementById("canvasId2").style.display = "block";
-	  
+ 
         // const MODEL_URL = 'https://storage.googleapis.com/tensorflowjsmodels0/model.json';
 	const MODEL_URL = 'model.json';
         const model = await tf.loadLayersModel(MODEL_URL);
-    
-        //try {
           
-          const image = new Image();
-    
-          // image.src = "https://storage.googleapis.com/images4download0/image2.png";
-          //image.src = "apple3D.png";
-          image.src = "tomatoe3D.png";
-    
+	const image = new Image();
+
+	image.src = load_image_basedOn_selection();
           
           
-          image.onload = function (){
+	image.onload = function (){
+		  
             // Draw image on canvas
+            document.getElementById("canvasId").style.display = "block";
             ctx.drawImage(image, 0,0);
 		  
             // Convert the image element to a tensor using fromPixels
@@ -164,6 +172,8 @@
 		  
             // -----------------------------------------------
             // Draw edge detection image on canvas
+            document.getElementById("canvasId2").style.display = "block";
+		  
             const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
 		  
 	    // Convert the cropped tensor back to an image
