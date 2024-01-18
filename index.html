@@ -84,7 +84,7 @@
 	
   // -------------------------------------------------
 
-  function load_image_basedOn_selection() {
+  function load_image_basedOn_selection(selected_image) {
 	  
     	if (selected_image == 'apple') {
           load_image = "apple3D.png";
@@ -105,7 +105,7 @@
       
       const image = new Image();
 
-      image.src = load_image_basedOn_selection();
+      image.src = load_image_basedOn_selection(selected_image);
 
       image.onload = function (){
 	      
@@ -138,7 +138,7 @@
           
 	const image = new Image();
 
-	image.src = load_image_basedOn_selection();
+	image.src = load_image_basedOn_selection(selected_image);
           
 	image.onload = function (){
 		  
