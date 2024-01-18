@@ -96,9 +96,6 @@
 	
   async function run_mobilenet() {
 
-    //document.getElementById("canvasId").style.display = "block";
-
-	  
     try {
       
       const image = new Image();
@@ -106,19 +103,22 @@
       image.src = load_image_basedOn_selection();
 
       image.onload = function (){
+	      
         // Draw image on canvas
+        document.getElementById("canvasId").style.display = "block";
         ctx.drawImage(image, 0,0);
+	      
         // Convert the image element to a tensor using fromPixels
         var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-        document.getElementById("outData").innerHTML = tf.max(tensor_image);
+	      
         const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+	      
         // Give image to model
         mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
       };
     
     } catch (error) {
       document.getElementById("outData").innerHTML = error; 
-      // return error
     }
     
   }  // end of run_mobilenet
@@ -135,11 +135,10 @@
 
 	image.src = load_image_basedOn_selection();
           
-          
 	image.onload = function (){
 		  
             // Draw image on canvas
-            //document.getElementById("canvasId").style.display = "block";
+            document.getElementById("canvasId").style.display = "block";
             ctx.drawImage(image, 0,0);
 		  
             // Convert the image element to a tensor using fromPixels
@@ -163,7 +162,7 @@
 	    const image_filter = image_filter0.div(b)
 	    const shape_out = image_filter.shape;
 		  
-            document.getElementById("outData").innerHTML = shape_out;
+            // document.getElementById("outData").innerHTML = shape_out;
             // 1,276,250,1
 
             // Dispose of the intermediate tensors
@@ -197,7 +196,7 @@
             const newSize = [512, 512];
             const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
 		  
-            document.getElementById("outData").innerHTML = resizedTensor.shape;
+            // document.getElementById("outData").innerHTML = resizedTensor.shape;
 		  
             // Give image to model
             const result = model.predict(resizedTensor); 
@@ -210,9 +209,6 @@
         //}
 	  
   }  // end of run_edgedetection_classifer
-
-
-
 
 </script>
 </body>
