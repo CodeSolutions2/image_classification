@@ -2,28 +2,45 @@
 <html>
 <head></head>
 <body>
-  
+	
+  <h1 style='text-align: center; margin-bottom: -35px;'>Image labeling webapp</h1>
+    <br>
     <!-- <img id="img" src="https://storage.googleapis.com/images4download0/image2.png" style="display:block" width="224" height="224" /> -->
     <!-- <img id="img" src="apple.png" style="display:block" width="224" height="224" /> -->
     <!-- OR -->
     <!-- Makes a selection file reader from the PC only, not from the cloud -->
     <!-- <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg"> -->
 
-    <canvas id="canvasId" width="224" height="224" style="display:block"></canvas>
-    <canvas id="canvasId2" width="224" height="224" style="display:block"></canvas>
+<!-- Drop down menu: Select image to classify -->
+   <label for="select_image">Select an image to classsify/label:</label>
+   <select name="select_image_list" id="select_image_list">
+        <option value="apple">apple</option>
+        <option value="tomatoe">tomatoe</option>
+   </select> 
+
+   <button id="select_image_button" onclick="selectImage()" style="display:block">Select image</button>
 	
-    <button id="myBtn" onclick="run_mobilenet()">mobilenet</button>
-    <button id="myBtn" onclick="run_edgedetection_classifer()">edgedetection_classifer</button>
-  
+<!-- Select model to classify -->
+   <h2 id="select_model" style='text-align: left; display:none'>Select different models to classify the image</h2>
+   <div style="width:100%;height:100%;position:absolute;vertical-align:middle;text-align:left;">
+        <button id="run_mobilenet_button" onclick="run_mobilenet()" style="display:none">mobilenet</button>&nbsp;&nbsp;&nbsp;
+        <button id="run_edgedetection_classifer_button" onclick="run_edgedetection_classifer()" style="display:none">edgedetection_classifer</button>
+    <div>
+		
+<!-- Once image and model are selected, make image appear in canvas and run model -->
+   <div style="width:100%;height:100%;position:absolute;vertical-align:middle;text-align:left;">
+        <canvas id="canvasId" width="224" height="224" style="display:none"></canvas>&nbsp;&nbsp;&nbsp;
+        <canvas id="canvasId2" width="224" height="224" style="display:none"></canvas>
+    <div>
 
     <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
 
-    <textarea id="outData" rows="2" cols="70" placeholder="notification" style="display:block"></textarea>
+    <!-- <textarea id="outData" rows="2" cols="70" placeholder="notification" style="display:block"></textarea> -->
 
+
+	    
 <style>
-      canvas {
-        border: 1px solid black;
-      }
+      canvas {border: 1px solid black;}
     </style>
   
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
@@ -42,6 +59,16 @@
 
   // -------------------------------------------------
 
+  select_image_list.addEventListener("click", () => {
+     document.getElementById("select_model").style.display = "block";
+     document.getElementById("run_mobilenet_button").style.display = "block";
+     document.getElementById("run_edgedetection_classifer_button").style.display = "block";
+  });
+		
+
+
+  // -------------------------------------------------
+	
   async function run_mobilenet() {
 
     try {
