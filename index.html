@@ -163,9 +163,8 @@
 		  
             // -----------------------------------------------
             // Draw edge detection image on canvas
-            document.getElementById("canvasId2").style.display = "block";
-		  
-            const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
+            // document.getElementById("canvasId2").style.display = "block";
+            // const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
 
 	    // ----------------------- try 0 -----------------------
 	    // Convert the cropped tensor back to an image
@@ -198,17 +197,14 @@
   //imageElement.src = canvasId2.toDataURL();  
 
 		// ----------------------- try 2 -----------------------
-
-
+		// const newimage = await tf.browser.toPixels(edge_image_tensor, canvasElement2).then(imageData => imageData).then(imageData => {
+		// 	ctx2.putImageData(imageData, 0, 0);
+    // const newimage = new Image();
+    // newimage.src = canvasElement2.toDataURL();
+			// return newimage;
+		// });;
 		
-		const newimage = await tf.browser.toPixels(edge_image_tensor, canvasElement2).then(imageData => imageData).then(imageData => {
-			ctx2.putImageData(imageData, 0, 0);
-    const newimage = new Image();
-    newimage.src = canvasElement2.toDataURL();
-			return newimage;
-		});;
-		
-		ctx2.drawImage(newimage, 0, 0);
+		// ctx2.drawImage(newimage, 0, 0);
 
             
 	    // -----------------------------------------------
@@ -228,6 +224,7 @@
             outp.innerHTML = result;
 		  
           };  // end of image.onload
+	  
         //} catch (error) {
         //  document.getElementById("outData").innerHTML = error; 
           // return error
