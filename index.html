@@ -66,12 +66,6 @@
      document.getElementById("run_edgedetection_classifer_button").style.display = "block";
   });
 
-select_image1.addEventListener("click", () => {
-     document.getElementById("select_model").style.display = "block";
-     document.getElementById("run_mobilenet_button").style.display = "block";
-     document.getElementById("run_edgedetection_classifer_button").style.display = "block";
-  });
-
   // OR
 
   // Way 1: onclick
@@ -89,7 +83,7 @@ select_image1.addEventListener("click", () => {
 	  
     	if (selected_image == 'apple') {
           load_image = "apple3D.png";
-	} else if (prompt_topic == 'tomatoe') {
+	} else if (selected_image == 'tomatoe') {
           load_image = "tomatoe3D.png";
 	} else {
           load_image = "tomatoe3D.png";
