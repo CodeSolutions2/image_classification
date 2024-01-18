@@ -67,15 +67,17 @@
      var selected_image = document.getElementById("select_this_image").value;
   });
 
-  selectElement.addEventListener("change", () => {
-     var selected_image = document.getElementById("select_this_image").value;
+  // selectElement.addEventListener("change", () => {
+  //    var selected_image = document.getElementById("select_this_image").value;
      // OR
      //  const selected_image = event.target.value;
-  });
+  // });
 	
   // -------------------------------------------------
 
-  function load_image_basedOn_selection(selected_image) {
+  async function load_image_basedOn_selection() {
+
+	  var selected_image = document.getElementById("select_this_image").value;
 	  
     	if (selected_image == 'apple') {
           load_image = "apple3D.png";
@@ -96,7 +98,7 @@
       
       const image = new Image();
 
-      image.src = load_image_basedOn_selection(selected_image);
+      image.src = await load_image_basedOn_selection();
 
       image.onload = function (){
 	      
@@ -129,7 +131,7 @@
           
 	const image = new Image();
 
-	image.src = load_image_basedOn_selection(selected_image);
+	image.src = await load_image_basedOn_selection();
           
 	image.onload = function (){
 		  
