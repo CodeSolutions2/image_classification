@@ -171,9 +171,11 @@
 	    // Convert the cropped tensor back to an image
             const edge_image_view = tf.browser.toPixels(edge_image_tensor, document.getElementById('canvasId2'));
 
-		outp.innerHTML = tf.max(test0);
-		//ctx2.drawImage(edge_image_view, 0,0);
-		// Uncaught TypeError: CanvasRenderingContext2D.drawImage: Argument 1 could not be converted to any of: HTMLImageElement, SVGImageElement, HTMLCanvasElement, HTMLVideoElement, OffscreenCanvas, ImageBitmap, VideoFrame.
+            outp.innerHTML = tf.max(edge_image_view);
+            //ctx2.drawImage(edge_image_view, 0,0);
+            // Uncaught TypeError: CanvasRenderingContext2D.drawImage: Argument 1 could not be converted to any of: HTMLImageElement, SVGImageElement, HTMLCanvasElement, HTMLVideoElement, OffscreenCanvas, ImageBitmap, VideoFrame.
+
+            // Uncaught (in promise) Error: Tensor values for a float32 Tensor must be in the range [0 - 1] but encountered -5999.99951171875.
 		
             // ----------------------- try 1 -----------------------
             // Create a new Uint8ClampedArray from the tensor values
