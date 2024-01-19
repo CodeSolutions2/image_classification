@@ -1,0 +1,1948 @@
+import multiprocessing
+
+import tensorflow as tf
+import tensorflow_datasets as tfds
+
+# import tensorflow.keras as keras
+# from tf.keras.applications.mobilenet import preprocess_input, decode_predictions
+
+import os
+
+import matplotlib.pyplot as plt
+
+import numpy as np
+
+----------------------------------------------
+
+# Subfunctions
+
+----------------------------------------------
+
+# Dataset from Kaggle
+def load_image_tf(image_path, img_w, img_h):
+    img = tf.io.read_file(image_path)
+    img = tf.image.decode_jpeg(img, channels=3)
+    img = tf.image.resize(img, (img_w, img_h))
+    
+    # Scale the image value from -1 to 1
+    img = tf.keras.applications.inception_v3.preprocess_input(img)
+    
+    return img
+
+----------------------------------------------
+
+def load_different_images(X, Y, label, PATH, img_w, img_h):
+    path_list = [os.path.join(PATH, i) for i in os.listdir(PATH)]
+    
+    for i in path_list:
+        X.append(load_image_tf(i, img_w, img_h))
+        Y.append(label)
+    
+    return X, Y
+
+----------------------------------------------
+
+def filter_an_image(rgb_image, x_dist=20):
+    
+    y_dist = x_dist
+    w, h, rbg = rgb_image.shape
+
+    LT = np.mean(rgb_image[0:x_dist, 0:y_dist,:])
+    RT = np.mean(rgb_image[w-x_dist:w, 0:y_dist,:])
+    LB = np.mean(rgb_image[0:x_dist, h-y_dist:h,:])
+    RB = np.mean(rgb_image[w-x_dist:w, h-y_dist:h,:])
+    
+    threshhold = 0.95
+    
+    if (LT > threshhold) and (RT > threshhold) and (LB > threshhold) and (RB > threshhold):
+        # _light_background_onecolor
+        out = 'object_only'
+        
+    # if np.abs(np.mean([LT, RT, LB, RB]) - LT) < 0.001:
+    # _dark_and_light_background_onecolor
+    #    out = 'object_only'
+    else:
+        out = 'object_w_background_mixedcolors'
+        
+    return out
+
+----------------------------------------------
+
+def view_images(rgb_image_list, rgb_image_list_label, x_dist):
+    # View a sample image
+    i = np.random.permutation(np.arange(len(rgb_image_list)))[0]
+
+    
+    fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+
+    ax0.imshow(rgb_image_list[i])
+    ax0.axis('off')
+    ax0.set_title(f"i={i}, {rgb_image_list_label[i]}", size=20)
+    plt.show()
+    
+    # Image values are from -1 to 1
+    print('max value: ', np.max(rgb_image_list[i]))
+    print('min value: ', np.min(rgb_image_list[i]))
+
+    # from scipy import stats
+    # print('mode value:', stats.mode(rgb_image_list[i], axis=None).mode[0])
+    y_dist = x_dist
+    w, h, rbg = rgb_image_list[i].shape
+
+    print('LT:', np.mean(rgb_image_list[i][0:x_dist, 0:y_dist,:]))
+    print('RT:', np.mean(rgb_image_list[i][w-x_dist:w, 0:y_dist,:]))
+    print('LB:', np.mean(rgb_image_list[i][0:x_dist, h-y_dist:h,:]))
+    print('RB:', np.mean(rgb_image_list[i][w-x_dist:w, h-y_dist:h,:]))
+
+----------------------------------------------
+
+def plotting_training_results(history):
+    
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+
+    plt.figure(figsize=(8, 8))
+    plt.subplot(2, 1, 1)
+    plt.plot(acc, label='Training Accuracy')
+    plt.plot(val_acc, label='Validation Accuracy')
+    plt.legend(loc='lower right')
+    plt.ylabel('Accuracy')
+    plt.ylim([min(plt.ylim()),1])
+    plt.title(f'Training and Validation Accuracy: train={np.max(acc)}, val={np.max(val_acc)}')
+
+    plt.subplot(2, 1, 2)
+    plt.plot(loss, label='Training Loss')
+    plt.plot(val_loss, label='Validation Loss')
+    plt.legend(loc='upper right')
+    plt.ylabel('Loss/Cross Entropy')
+    plt.ylim([0,1.0])
+    plt.title(f'Training and Validation Loss: train={np.min(loss)}, val={np.min(val_loss)}')
+    plt.xlabel('epoch')
+    plt.show()
+
+----------------------------------------------
+
+def checker(i, i_prev, Y_train_filtered, class_num):
+    if (i != i_prev):
+        if (Y_train_filtered[i] == class_num):
+            flag = 'ok'
+        else:
+            flag = 'not_ok'
+    else:
+        flag = 'not_ok'
+    return flag
+
+
+def random_padder(X_train_filtered, Y_train_filtered):
+    
+    # Train class count
+    from collections import Counter
+    c = Counter(Y_train_filtered)
+    
+    # 1 = apple, 0 = tomatoe
+    class_key = list(c.keys())
+    class_value = list(c.values())
+    max_class = np.argmax(c)
+    images_to_add_per_class = [class_value[max_class] - i for i in class_value]
+    original_len_images = len(X_train_filtered)
+
+    # Pick sequentially: like a human would select images
+    i_prev = 0
+
+    for ind, val in enumerate(images_to_add_per_class):
+        class_num = class_key[ind]
+
+        for num in range(val):
+            # Reset flag
+            flag = 'not_ok'
+
+            # Select correct image
+            while (flag == 'not_ok'):
+                i = np.random.permutation(np.arange(original_len_images))[0]
+                flag = checker(i, i_prev, Y_train_filtered, class_num)
+
+            # Add correct padding selection to other images
+            X_train_filtered.append(X_train_filtered[i])
+            Y_train_filtered.append(Y_train_filtered[i])
+
+            # Ensure that the previous selection does not repeat, to give a varitey of images
+            i_prev = i
+            
+    return X_train_filtered, Y_train_filtered
+
+----------------------------------------------
+
+def make_dataset(X, Y, BATCH_SIZE):
+    ds = tf.data.Dataset.from_tensor_slices((X, Y))
+    ds = ds.shuffle(len(X))
+    ds = ds.batch(BATCH_SIZE, drop_remainder=True)
+
+----------------------------------------------
+
+def sequential_padder(X_train_filtered, Y_train_filtered):
+    
+    # Train class count
+    from collections import Counter
+    c = Counter(Y_train_filtered)
+
+    # 1 = apple, 0 = tomatoe
+    class_key = list(c.keys())
+    print('class_key: ', class_key)
+
+    class_value = list(c.values())
+    print('class_value: ', class_value)
+
+    max_class = np.argmax(c)
+    print('max_class: ', max_class)
+
+    images_to_add_per_class = [class_value[max_class] - i for i in class_value]
+    print('images_to_add_per_class: ', images_to_add_per_class)
+    
+    # --------------------------------------------
+
+    # Need to account for when a class does not need padding: assign directly
+    X_train_filtered_pad = X_train_filtered
+    Y_train_filtered_pad = Y_train_filtered
+
+    for ind, samples2pad in enumerate(images_to_add_per_class):
+
+            print('Number of values to pad:', samples2pad)
+
+            # Identify class number
+            class_num = class_key[ind]   # class_key:  [1, 0]
+            print('Class number that needs padding:', class_num)
+
+            # Need to find the index of Y_train_filtered/X_train_filtered that belong to class_num
+            class_num_index = [index for index, val in enumerate(Y_train_filtered) if val == class_num]
+            print('class_num_index:', class_num_index)
+
+            # Select X and Y for the specified class number index
+            X_class_num_select = [X_train_filtered[i] for i in class_num_index]
+            Y_class_num_select = [Y_train_filtered[i] for i in class_num_index]
+
+            # Find the number of samples for the specified class number
+            curSamples = len(X_class_num_select)
+            print('Number of samples to repeat for this specific class:', curSamples)
+
+            # If the number of class samples are greater than the amount to pad, use class samples in sequential order
+            if curSamples > samples2pad:
+                # Loop over every element in a because it is 3d matrix, and add each 3d piece of information one loop at a time
+                for i in range(samples2pad):
+                    X_train_filtered_pad.append(X_class_num_select[i])
+                    Y_train_filtered_pad.append(Y_class_num_select[i])
+            else:
+                # If the number of class samples are less than the amount to pad, repeat the full class sample an even amount of times
+                num_of_full_loops = int(samples2pad/curSamples)
+                print('num_of_full_loops:', num_of_full_loops)
+
+                for i in range(num_of_full_loops):
+                    for j in range(curSamples):
+                        X_train_filtered_pad.append(X_class_num_select[j])
+                        Y_train_filtered_pad.append(Y_class_num_select[j])
+
+                remaining_vals = samples2pad - num_of_full_loops*curSamples
+                print('remaining_vals:', remaining_vals)
+                for i in range(remaining_vals):
+                    X_train_filtered_pad.append(X_class_num_select[i])
+                    Y_train_filtered_pad.append(Y_class_num_select[i])
+
+    # --------------------------------------------
+    
+    print('Length of Y matrix after padding:', len(Y_train_filtered_pad))
+            
+    # --------------------------------------------
+    
+    # Confirm that classes are even after padding
+    c = Counter(Y_train_filtered_pad)
+
+    # 1 = apple, 0 = tomatoe
+    class_key = list(c.keys())
+    print('class_key: ', class_key)
+
+    class_value = list(c.values())
+    print('class_value: ', class_value)
+
+    max_class = np.argmax(c)
+    print('max_class: ', max_class)
+
+    images_to_add_per_class = [class_value[max_class] - i for i in class_value]
+    print('images_to_add_per_class: ', images_to_add_per_class)
+    
+    return X_train_filtered_pad, Y_train_filtered_pad
+
+----------------------------------------------
+
+# Load data
+
+----------------------------------------------
+
+# Set desired dimensions of images
+w, h, rgb = 512, 512, 3
+# w, h, rgb = 224, 224, 3
+
+----------------------------------------------
+
+# Using a dataset from Kaggle
+img_w = w
+img_h = h
+
+X_train = []
+Y_train = []
+label = 1  #'apple'
+PATH_apples = "/kaggle/input/apples-or-tomatoes-image-classification/train/apples"
+X_train, Y_train = load_different_images(X_train, Y_train, label, PATH_apples, img_w, img_h)
+
+label = 0  # 'tomatoe'
+PATH_tomatoes = "/kaggle/input/apples-or-tomatoes-image-classification/train/tomatoes"
+X_train, Y_train = load_different_images(X_train, Y_train, label, PATH_tomatoes, img_w, img_h)
+
+----------------------------------------------
+
+X_test = []
+Y_test = []
+label = 1  #'apple'
+PATH_apples = "/kaggle/input/apples-or-tomatoes-image-classification/test/apples"
+X_test, Y_test = load_different_images(X_test, Y_test, label, PATH_apples, img_w, img_h)
+
+label = 0  # 'tomatoe'
+PATH_tomatoes = "/kaggle/input/apples-or-tomatoes-image-classification/test/tomatoes"
+X_test, Y_test = load_different_images(X_test, Y_test, label, PATH_tomatoes, img_w, img_h)
+
+----------------------------------------------
+
+# Define the corner bounding box length to decide if an object is only displayed
+x_dist = 20
+
+----------------------------------------------
+
+# View a sample image
+view_images(X_train, Y_train, x_dist)
+
+----------------------------------------------
+
+## Filter data: only keep images with same colored background in all four courners
+X_train_filtered = []
+Y_train_filtered = []
+
+# Remove images that have mixed color edge backgrounds
+for ind, img in enumerate(X_train):
+    if filter_an_image(img, x_dist=x_dist) == 'object_only':
+        X_train_filtered.append(X_train[ind])
+        Y_train_filtered.append(Y_train[ind])
+
+X_test_filtered = []
+Y_test_filtered = []
+for ind, img in enumerate(X_test):
+    if filter_an_image(img, x_dist=x_dist) == 'object_only':
+        X_test_filtered.append(X_test[ind])
+        Y_test_filtered.append(Y_test[ind])
+
+----------------------------------------------
+
+print('Train: Original image count: ', len(X_train))
+print('Train: Filtered image count: ', len(X_train_filtered))
+print('Test: Original image count: ', len(X_test))
+print('Test: Filtered image count: ', len(X_test_filtered))
+
+----------------------------------------------
+
+# View a sample image
+view_images(X_train_filtered, Y_train_filtered, x_dist)
+
+----------------------------------------------
+
+# Pad images
+
+----------------------------------------------
+
+# Pad images
+print('length of X_train_filtered BEFORE padding: ', len(X_train_filtered))
+print('length of Y_train_filtered BEFORE padding: ', len(Y_train_filtered))
+
+X_train_filtered_pad, Y_train_filtered_pad = sequential_padder(X_train_filtered, Y_train_filtered)
+
+print('length of X_train_filtered AFTER padding: ', len(X_train_filtered))
+print('length of Y_train_filtered AFTER padding: ', len(Y_train_filtered))
+
+----------------------------------------------
+
+# Pad images
+print('length of X_train_filtered BEFORE padding: ', len(X_train_filtered))
+print('length of Y_train_filtered BEFORE padding: ', len(Y_train_filtered))
+
+X_train_filtered, Y_train_filtered = random_padder(X_train_filtered, Y_train_filtered)
+
+print('length of X_train_filtered AFTER padding: ', len(X_train_filtered))
+print('length of Y_train_filtered AFTER padding: ', len(Y_train_filtered))
+
+----------------------------------------------
+
+# Create a Dataset
+BATCH_SIZE = 1
+
+train_ds = tf.data.Dataset.from_tensor_slices((X_train_filtered_pad, Y_train_filtered_pad))
+train_ds = train_ds.shuffle(len(X_train_filtered_pad))
+train_ds = train_ds.batch(BATCH_SIZE, drop_remainder=True)
+
+----------------------------------------------
+
+test_ds = tf.data.Dataset.from_tensor_slices((X_test_filtered, Y_test_filtered))
+test_ds = test_ds.shuffle(len(X_test_filtered))
+test_ds = test_ds.batch(BATCH_SIZE, drop_remainder=True)
+
+
+
+
+
+
+
+----------------------------------------------
+
+# View a sample image
+view_images(X_train_filtered, Y_train_filtered, x_dist)
+
+----------------------------------------------
+
+# Data rotation of each image using Keras layers
+# https://www.tensorflow.org/guide/keras/preprocessing_layers
+
+which_one = 'rotation'
+    
+if which_one == 'rotation_zoom':
+    data_augmentation = tf.keras.Sequential(
+        [tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomRotation(0.1),
+            tf.keras.layers.RandomZoom(0.1),
+        ])
+
+elif which_one == 'rotation':
+    data_augmentation = tf.keras.Sequential(
+        [tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomRotation(0.2)
+        ])
+
+else:
+    data_augmentation = tf.keras.layers.RandomFlip("horizontal")
+    
+# OR
+
+# data_augmentation = tf.keras.layers.RandomFlip("horizontal")
+# data_augmentation.adapt(ds)
+# ds = data_augmentation(ds)
+
+----------------------------------------------
+
+
+
+BATCH_SIZE = 1
+
+# Way 0: Applying the data manipulations to the same number of images, the number of images stay the same
+
+# The function stopped working
+# train_ds = make_dataset(X_train_filtered, Y_train_filtered, BATCH_SIZE)
+# OR
+train_ds = tf.data.Dataset.from_tensor_slices((X_train_filtered, Y_train_filtered))
+train_ds = train_ds.shuffle(len(X_train_filtered))
+train_ds = train_ds.batch(BATCH_SIZE, drop_remainder=True)
+
+print('length of dataset BEFORE data_augmentation: ', len(train_ds))
+
+# This just rotates the images in the data, so it does not augment the dataset with images
+train_ds = train_ds.map(lambda x, y: (data_augmentation(x), y))
+
+print('length of dataset AFTER data_augmentation: ', len(train_ds))
+----------------------------------------------
+
+# Way 1: Manually applying the layer to each one of the images, 
+# and appending the image into a new dataset
+num_of_images_2_add_per_image = 3  # 152 * 3 = 456
+
+X_train_filtered_da = []
+Y_train_filtered_da = []
+
+for ind, image in enumerate(X_train_filtered):
+    
+    for n in range(num_of_images_2_add_per_image):
+        
+        # It will loop n times and the data_augmentation will generate
+        # a new random orientation of the same image
+        
+        # Apply the Keras layer to the image
+        augmented_image = data_augmentation(image)
+
+        X_train_filtered_da.append(augmented_image)
+        Y_train_filtered_da.append(Y_train_filtered[ind])
+
+print('length of dataset AFTER data_augmentation: ', len(Y_train_filtered_da))
+
+X_train_filtered_da = np.array(X_train_filtered_da)
+Y_train_filtered_da = np.array(Y_train_filtered_da)
+print('X_train_filtered_da.shape: ', X_train_filtered_da.shape)
+print('Y_train_filtered_da.shape: ', Y_train_filtered_da.shape)
+
+----------------------------------------------
+
+
+
+# View a sample image
+view_images(X_train_filtered_da, Y_train_filtered_da, x_dist)
+
+
+
+
+
+
+----------------------------------------------
+## Pre-process the images so that the stems standout more than the fruit
+----------------------------------------------
+This made the images look like a 2D imprint so the stem could be focused on.
+
+import skimage
+from skimage.io import imread, imshow
+from skimage.transform import resize
+from skimage.util import crop
+from skimage.morphology import label
+from skimage.color import rgb2gray, gray2rgb, rgb2lab, lab2rgb
+----------------------------------------------
+# Treat images
+X_train_filtered_proc = []
+Y_train_filtered_proc = Y_train_filtered
+
+
+view_OR_not = 'do_not_view_image'  # view_image
+
+for i in range(len(X_train_filtered)):
+    
+    # -----------------------------
+    
+    image = X_train_filtered[i]
+
+    # OR
+
+    # image_path = '/kaggle/input/apples-or-tomatoes-image-classification/train/apples/img_p1_109.jpeg'
+    # image = tf.io.read_file(image_path)
+    # image = tf.io.decode_jpeg(image, channels=3)
+    # image = tf.image.resize(image, size=[w, h])
+    # image = image/255  # Scale image from -1 to 1
+
+    # -----------------------------
+
+    image_3D = tf.image.convert_image_dtype(image, dtype=tf.float32)
+    # print('image_3D.shape: ', image_3D.shape)
+    # image_3D.shape:  (512, 512, 3)
+
+    # -----------------------------
+
+    if view_OR_not == 'view_image':
+        fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+        ax0.imshow(image_3D)
+        ax0.axis('off')
+        ax0.set_title(f"", size=20)
+        plt.show()
+
+    # -----------------------------
+
+    # Transform image into a 2D imp
+    eg = 1000
+    # for eg in np.arange(3, 10, 0.5):
+
+    # Vertical edge detection filter
+    kernel = tf.constant([
+        [eg, 0, -eg],
+        [eg, 0, -eg],
+        [eg, 0, -eg],
+    ], dtype=tf.float32)
+
+    # Scharr filter
+    # kernel = tf.constant([[eg, 0, -eg], [eg*2, 0, -eg*2], [eg, 0, -eg],], dtype=tf.float32)
+    # kernel = tf.constant([[eg, 0, -eg*3], [eg, 0, -eg*3], [eg, 0, -eg*3],], dtype=tf.float32)
+
+    # print('kernel.shape: ', kernel.shape)
+    # kernel.shape:  (3, 3)
+
+    # Make kernel 3 dimensions like the rgb image
+    kernel = np.expand_dims(kernel, axis=2) # input channels dim
+    kernel = np.expand_dims(kernel, axis=3) # output channels dim
+    k_rgb = np.repeat(kernel, 3, axis=2)
+    # print('k_rgb.shape: ', k_rgb.shape)
+    # k_rgb.shape:  (3, 3, 3, 1)
+
+    # -----------------------------
+
+    # tf.nn.conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None, name=None)
+    padding='SAME'
+    # padding='VALID'
+    strides = 1
+
+    image_4D = tf.expand_dims(image_3D, axis=0)
+    # print('image_4D.shape: ', image_4D.shape)
+
+    image_filter = tf.nn.conv2d(image_4D, k_rgb, strides=strides, padding=padding)
+    print('image_filter.shape: ', image_filter.shape)
+
+    # Make image size (1, 512, 512, 1) 
+    # image_filter = tf.squeeze(image_filter)
+    # print('image_filter.shape: ', image_filter.shape)
+    
+    image_filter = tf.reshape(image_filter, [512, 512])
+    print('image_filter.shape: ', image_filter.shape)
+    
+    # -----------------------------
+    
+    # The image needs to have 3 layers to be used in the model
+    
+    # rgb_image = tf.image.grayscale_to_rgb(image_filter)
+    # print('rgb_image.shape: ', rgb_image.shape)
+    
+    # OR
+    
+    # img_gray = rgb2lab(image_3D)   # shape (256, 256, 3)
+    # img_gray[:,:,0] = image_filter
+    # img_gray[:,:,1] = image_filter # np.zeros((512, 512))+1
+    # img_gray[:,:,2] = image_filter # np.zeros((512, 512))+1
+    
+
+    # -----------------------------
+    
+    if view_OR_not == 'view_image':
+        fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+        ax0.imshow(image_filter)
+        ax0.axis('off')
+        ax0.set_title(f"eg={eg}", size=20)
+        plt.show()
+        
+    # -----------------------------
+    
+    # The transformed images are grayscale
+    X_train_filtered_proc.append(image_filter)
+----------------------------------------------
+
+X_train_filtered_proc[6].shape
+fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+ax0.imshow(X_train_filtered_proc[6])
+ax0.axis('off')
+ax0.set_title(f"eg={eg}", size=20)
+plt.show()
+
+----------------------------------------------
+
+print('len(X_train_filtered_proc): ', len(X_train_filtered_proc))
+print('len(Y_train_filtered_proc): ', len(Y_train_filtered_proc))
+
+----------------------------------------------
+
+# View a sample image
+view_images(X_train_filtered_proc, Y_train_filtered_proc, x_dist)
+
+----------------------------------------------
+
+## pre-processing transformation 0 (DO NOT USE)
+Good for Python only, these functions give errors when used in Tensorflow.js using the model.json file. These functions are a part of the TFOLambda class and this class does not exist in Tensorflow.js.
+
+----------------------------------------------
+
+def edge_detection(image_3D):
+    
+    # Vertical edge detection filter
+    eg = 1000
+    kernel = tf.constant([[eg, 0, -eg], [eg, 0, -eg], [eg, 0, -eg],], dtype=tf.float32)
+    kernel = np.expand_dims(kernel, axis=2) # input channels dim
+    kernel = np.expand_dims(kernel, axis=3) # output channels dim
+    k_rgb = np.repeat(kernel, 3, axis=2)
+    
+    padding='SAME'
+    strides = 1
+    image_4D = tf.expand_dims(image_3D, axis=0)
+    
+    image_filter = tf.nn.conv2d(image_4D, k_rgb, strides=strides, padding=padding)
+    # print('image_filter.shape: ', image_filter.shape)
+    
+    return image_filter
+
+----------------------------------------------
+
+## pre-processing transformation 1 (USE: treat the data outside the model with this recreation of edge_detection for Both Python and JavaScript/Tensorflow.js)
+
+def edge_detection2(image_3D):
+    
+    # Vertical edge detection filter
+    eg = 1000
+    k_rgb_values = tf.constant([[[[ 1000.], [ 1000.], [ 1000.]],
+        [[    0.], [    0.], [    0.]],
+        [[-1000.], [-1000.], [-1000.]]],
+       [[[ 1000.], [ 1000.], [ 1000.]],
+        [[    0.], [    0.], [    0.]],
+        [[-1000.], [-1000.], [-1000.]]],
+       [[[ 1000.], [ 1000.], [ 1000.]],
+        [[    0.], [    0.], [    0.]],
+        [[-1000.], [-1000.], [-1000.]]]], dtype=tf.float32)
+    
+    padding='SAME'
+    strides = 1
+    image_4D = tf.expand_dims(image_3D, axis=0)
+    
+    image_filter = tf.nn.conv2d(image_4D, k_rgb_values, strides=strides, padding=padding)
+    # print('image_filter.shape: ', image_filter.shape)
+    
+    return image_filter
+
+----------------------------------------------
+
+# Check that function is correct
+i = np.random.permutation(np.arange(len(X_test_filtered)))[0]
+image_3D = X_test_filtered[i]
+image_filter = edge_detection2(image_3D)
+
+image_filter = tf.reshape(image_filter, [w, h])
+print('image_filter.shape: ', image_filter.shape)
+
+# View a sample image
+fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+
+ax0.imshow(image_filter)
+ax0.axis('off')
+ax0.set_title(f"i={i}, {Y_test_filtered[i]}", size=20)
+plt.show()
+
+----------------------------------------------
+
+# Apply tranformation to dataset
+train_ds = train_ds.map(lambda x, y: (edge_detection2(x), y))
+test_ds = test_ds.map(lambda x, y: (edge_detection2(x), y))
+
+----------------------------------------------
+
+print('Train shape after edge detection transformation: ', list(train_ds.take(1).as_numpy_iterator())[0][0].shape)
+print('Test shape after edge detection transformation: ', list(test_ds.take(1).as_numpy_iterator())[0][0].shape)
+
+----------------------------------------------
+
+# Also, outside of the model, reshape the image back to a 4D tensor
+train_ds = train_ds.map(lambda x, y: (tf.reshape(x, [1, w, h, 1]), y))
+test_ds = test_ds.map(lambda x, y: (tf.reshape(x, [1, w, h, 1]), y))
+
+----------------------------------------------
+
+print('Train shape needed to insert into model (4D tensor): ', list(train_ds.take(1).as_numpy_iterator())[0][0].shape)
+print('Test shape needed to insert into model (4D tensor):', list(test_ds.take(1).as_numpy_iterator())[0][0].shape)
+
+----------------------------------------------
+
+## pre-processing transformation 2 (DO NOT USE)
+Tried to obtain the same results as tf.nn.conv2d, using tf.keras.layers.Conv2D to put pre-processing inside the model.
+----------------------------------------------
+
+# edge_detection3
+image_filter = tf.keras.Sequential(
+        [tf.keras.layers.Conv2D(3, (3,3), strides=(1, 1), padding='same')
+        ])
+
+----------------------------------------------
+
+train_ds2 = train_ds.map(lambda x, y: (image_filter(x), y))
+
+----------------------------------------------
+for img, y in train_ds2.take(1):
+    print("img.shape: ", img.shape)
+
+----------------------------------------------
+img = tf.squeeze(img)
+w, h, d = img.shape
+print(f"w: {w}, h: {h}, d: {d}")
+img.shape
+
+----------------------------------------------
+img = np.mean(img, axis=2)
+
+----------------------------------------------
+# View a sample image
+fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+
+ax0.imshow(img)
+ax0.axis('off')
+ax0.set_title(f"", size=20)
+plt.show()
+
+----------------------------------------------
+tot_pixels = w*h
+out = np.reshape(img, (1,tot_pixels))
+out.shape
+
+----------------------------------------------
+
+from scipy import stats
+print('mode value:', stats.mode(out, axis=0).mode[0])
+----------------------------------------------
+
+min_val = np.min(abs(out))
+min_val
+----------------------------------------------
+img2 = img - img[0,0]
+# img2 = img - 0.088777184
+# View a sample image
+fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+
+ax0.imshow(img2)
+ax0.axis('off')
+ax0.set_title(f"", size=20)
+plt.show()
+----------------------------------------------
+
+
+----------------------------------------------
+## pre-processing transformation 3
+----------------------------------------------
+data_rotation = tf.keras.Sequential(
+        [tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomRotation(0.2)
+        ])
+----------------------------------------------
+
+----------------------------------------------
+----------------------------------------------
+
+----------------------------------------------
+
+
+
+
+
+## Create a Dataset
+BATCH_SIZE = 1
+
+# Way 0: use padded Dataset
+
+# The function stopped working
+# train_ds = make_dataset(X_train_filtered, Y_train_filtered, BATCH_SIZE)
+# OR
+train_ds = tf.data.Dataset.from_tensor_slices((X_train_filtered_proc, Y_train_filtered_proc))
+train_ds = train_ds.shuffle(len(X_train_filtered_proc))
+train_ds = train_ds.batch(BATCH_SIZE, drop_remainder=True)
+
+# --------------------------------
+
+# The function stopped working
+# test_ds = make_dataset(X_test_filtered, Y_test_filtered)
+# OR
+
+# test_ds = tf.data.Dataset.from_tensor_slices((X_test_filtered, Y_test_filtered_proc))
+# test_ds = test_ds.shuffle(len(X_test_filtered))
+# test_ds = test_ds.batch(BATCH_SIZE, drop_remainder=True)
+
+----------------------------------------------
+
+# Way 1: use padded and data_augmented Dataset
+# train_ds = make_dataset(X_train_filtered_da, Y_train_filtered_da)
+# OR
+train_ds = tf.data.Dataset.from_tensor_slices((X_train_filtered_da, Y_train_filtered_da))
+train_ds = train_ds.shuffle(len(X_train_filtered_da))
+train_ds = train_ds.batch(BATCH_SIZE, drop_remainder=True)
+
+# --------------------------------
+
+# The function stopped working
+# test_ds = make_dataset(X_test_filtered, Y_test_filtered)
+# OR
+test_ds = tf.data.Dataset.from_tensor_slices((X_test_filtered, Y_test_filtered))
+test_ds = test_ds.shuffle(len(X_test_filtered))
+test_ds = test_ds.batch(BATCH_SIZE, drop_remainder=True)
+
+----------------------------------------------
+
+list(train_ds.take(1).as_numpy_iterator())
+
+----------------------------------------------
+
+
+
+
+----------------------------------------------
+# Model
+----------------------------------------------
+
+## Define callbacks
+
+----------------------------------------------
+
+patience = 10
+early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=patience, mode='min')
+
+----------------------------------------------
+
+# So it basically changes the learning rate at each forward-backward pass
+# Learning Rate Schedule for Fine Tuning #
+def exponential_lr(epoch,
+                   start_lr = 0.01, min_lr = 0.00001, max_lr = 0.00005,
+                   rampup_epochs = 5, sustain_epochs = 0,
+                   exp_decay = 0.8):
+
+    def lr(epoch, start_lr, min_lr, max_lr, rampup_epochs, sustain_epochs, exp_decay):
+        # linear increase from start to rampup_epochs
+        if epoch < rampup_epochs:
+            lr = ((max_lr - start_lr) / rampup_epochs * epoch + start_lr)
+        # constant max_lr during sustain_epochs
+        elif epoch < rampup_epochs + sustain_epochs:
+            lr = max_lr
+        # exponential decay towards min_lr
+        else:
+            lr = ((max_lr - min_lr) *
+                  exp_decay**(epoch - rampup_epochs - sustain_epochs) + min_lr)
+        return lr
+    
+    return lr(epoch, start_lr, min_lr, max_lr, rampup_epochs, sustain_epochs, exp_decay)
+
+----------------------------------------------
+
+def exponential_lr(epoch):
+    
+    start_value = 0.01
+    decay_rate = -0.1
+    lr = np.exp(np.float64(decay_rate*epoch))*start_value
+    
+    return lr
+
+----------------------------------------------
+
+lr_callback = tf.keras.callbacks.LearningRateScheduler(exponential_lr, verbose=True)
+
+# rng = [i for i in range(EPOCHS)]
+# y = [exponential_lr(x) for x in rng]
+# plt.plot(rng, y)
+# print("Learning rate schedule: {:.3g} to {:.3g} to {:.3g}".format(y[0], max(y), y[-1]))
+
+----------------------------------------------
+
+## Way 0: Use mobilenet model directly
+
+# https://keras.io/api/applications/mobilenet/#mobilenetv2-function
+
+# MobileNetV2
+
+# When setting `include_top=True` and loading `imagenet` weights, `input_shape` should be (224, 224, 3).
+pretrained_model = tf.keras.applications.MobileNetV2()
+result = pretrained_model.predict(train_ds)  # Probabilities of each class
+predictions = tf.keras.applications.mobilenet_v2.decode_predictions(result)
+predictions
+
+----------------------------------------------
+
+# MobileNetV3Small
+
+# Only works with Dataset loaded using tf.keras.utils.image_dataset_from_directory
+pretrained_model = tf.keras.applications.MobileNetV3Small(input_shape=None,
+    alpha=1.0,
+    minimalistic=False,
+    include_top=True,
+    weights="imagenet",
+    input_tensor=None,
+    classes=1000,
+    pooling=None,
+    dropout_rate=0.2,
+    classifier_activation="softmax",
+    include_preprocessing=True,)
+
+result = pretrained_model.predict(train_ds)
+predictions = tf.keras.applications.mobilenet_v2.decode_predictions(result)
+predictions
+
+# This only works if train_ds is made using tf.keras.utils.image_dataset_from_directory
+syntax = 0
+Xory = 1
+class_label_list = list(train_ds.take(10).as_numpy_iterator())[syntax][Xory]
+
+----------------------------------------------
+
+d = {}
+c = 0
+for i in range(len(predictions)):
+    
+    class_label = Y_train_filtered_da[i]
+    # OR
+    # class_label = class_label_list[i] # if using image_dataset_from_directory
+    
+    d[f'{i}_{class_label}'] = predictions[i][0][1]
+    
+    # 1 = apple, 0 = tomatoe
+    if class_label == 1 and predictions[i][0][1] == 'Granny_Smith':
+        c = c + 1
+    elif class_label == 1 and predictions[i][0][1] == 'Apple':
+        c = c + 1
+    elif class_label == 0 and predictions[i][0][1] == 'Tomatoe':
+        c = c + 1
+
+print('accuracy: ', c/len(predictions))
+
+d
+
+----------------------------------------------
+
+## Way 1: Do not change the weights of the pre-trained model, add new class output, train the model with new data
+
+# Step 0: load the base model
+input_layer = tf.keras.layers.Input(shape=(w, h, rgb))
+
+# include_top=False ignores that classifier_activation="softmax": meaning one can set it to sigmoid or softmax
+# base_model = tf.keras.applications.mobilenet_v2.MobileNetV2()  # can call without parameters
+# OR
+base_model = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=(w, h, rgb),
+                                               alpha=1.0,
+                                               weights='imagenet',
+                                               input_tensor=input_layer,
+                                               include_top=False,
+                                               pooling=None,
+                                               classes=1000,
+                                               #classifier_activation="softmax"
+                                             )
+
+----------------------------------------------
+
+# Step 1: Decide if one wants to FINE TUNE (change the weights of the pre-trained model) OR
+# NOT (do not change the weights)
+
+# Do not change the weights of the base_model
+base_model.trainable = False
+
+----------------------------------------------
+# Step 2: Make a model using the base_model
+
+# Functional API format
+
+# ----------------------------
+
+# It rotates/zooms/alters the existing images, it DOES NOT increase the number of images
+x = data_augmentation(input_layer)
+
+# ----------------------------
+
+# Scales the image value from -1 to 1
+# preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
+# x = preprocess_input(input_layer)
+
+# ----------------------------
+
+# Initialize the model
+
+# kernel_initializer = tf.keras.initializers.HeUniform()
+# x = tf.keras.layers.Dense(units=1280, input_shape=(None, 7, 7, 1280), kernel_initializer=kernel_initializer)(x)
+
+# OR
+
+# x = base_model(x, training=False)  # allows inference/prediction calling
+x = base_model(x)
+
+# OR
+
+# x = base_model(input_layer)
+                      
+# ----------------------------
+# The model is trainned on many classes, but we want it to predict for two classes only.
+# If the model is overly sensitive to predicting many things, it is overfitted, so one
+# needs to make the model less sensitive [or reduce the complexity of the model]. Thus, 
+# Averaging, Dropping out values, and normalizing are logical stratigies for making predictions
+# less sensitive (ie: smoothing the loss function)
+# ----------------------------
+
+# Put a global averaging layer after the pre-trained weights
+x = tf.keras.layers.GlobalAveragePooling2D()(x)
+
+# ----------------------------
+
+# Add a Dropout layer to prevent overfitting
+x = tf.keras.layers.Dropout(0.2)(x)
+
+# OR 
+
+# x = tf.keras.layers.BatchNormalization(renorm=True)(x)
+# x = tf.keras.layers.Flatten()(x)
+
+# ----------------------------
+
+# Add a layer to output the number of new classes
+outputs = tf.keras.layers.Dense(1, activation='sigmoid', name='outputs')(x)
+# OR
+# outputs = tf.keras.layers.Dense(2, activation='softmax', name='outputs')(x)
+
+model = tf.keras.Model(input_layer, outputs)
+
+----------------------------------------------
+
+model.summary()
+
+# (Optional) show a diagram
+tf.keras.utils.plot_model(model, show_shapes=True)
+
+
+----------------------------------------------
+
+# Compile the model
+base_learning_rate = 0.0001
+base_learning_rate = 0.001
+
+# from_logits=False tells BinaryCrossentropy to NOT calculate sigmoid, one does
+# not want to calculate sigmoid because the activation 
+# function (sigmoid) was already specified in the last Dense layer of the model
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rate),
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+              metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0, name='accuracy')])
+
+# OR
+
+# model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
+
+----------------------------------------------
+
+# View the number of model layers that can be trained
+len(model.trainable_variables)
+----------------------------------------------
+
+NUM_TRAINING_IMAGES = len(X_train_filtered)
+print('NUM_TRAINING_IMAGES: ', NUM_TRAINING_IMAGES)
+# ----------------------------
+# Learning is very slow
+STEPS_PER_EPOCH = NUM_TRAINING_IMAGES // BATCH_SIZE
+# OR
+# STEPS_PER_EPOCH = 4 * (NUM_TRAINING_IMAGES // BATCH_SIZE)
+# ----------------------------
+
+print('STEPS_PER_EPOCH: ', STEPS_PER_EPOCH)
+
+EPOCHS = 20
+
+----------------------------------------------
+
+# (Optional) Evaluate the model WITHOUT training the model, 
+# to see the baseline performance of the UNTRAINED model
+
+
+(test_loss, test_accuracy) = model.evaluate(test_ds)
+
+----------------------------------------------
+
+# Train the model: see if the loss and accuracy can be better for this dataset
+history = model.fit(train_ds, validation_data=test_ds,
+                   epochs=EPOCHS, 
+                    steps_per_epoch=STEPS_PER_EPOCH,
+                    #callbacks=[lr_callback],
+                   )
+
+----------------------------------------------
+plotting_training_results(history)
+
+----------------------------------------------
+
+## Way 2: Change the base_model weights, add layers, train model
+# Step 0: load the base model
+input_layer = tf.keras.layers.Input(shape=(w, h, rgb))
+
+# base_model = tf.keras.applications.mobilenet_v2.MobileNetV2()  # can call without parameters
+# OR
+base_model = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=(w, h, rgb),
+                                               alpha=1.0,
+                                               weights='imagenet',
+                                               input_tensor=input_layer,
+                                               include_top=False,
+                                               pooling=None,
+                                               classes=1000,
+                                               #classifier_activation="softmax"
+                                             )
+----------------------------------------------
+
+# Do not change the weights of the base_model
+base_model.trainable = True
+
+# First determine how many layers are in the pre-trained model
+len(base_model.layers)
+----------------------------------------------
+
+# Decide from which layer to change the weights
+fine_tune_at = int( len(base_model.layers) - len(base_model.layers)/5 )
+print('fine_tune_at: ', fine_tune_at)
+
+# Freeze all the layers before the `fine_tune_at` layer
+for layer in base_model.layers[:fine_tune_at]:
+    layer.trainable = False
+
+----------------------------------------------
+
+# Step 2: Make a model using the base_model
+
+# Functional API format
+
+# ----------------------------
+
+# It rotates/zooms/alters the existing images, it DOES NOT increase the number of images
+x = data_augmentation(input_layer)
+
+# ----------------------------
+
+# Scales the image value from -1 to 1
+# preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
+# x = preprocess_input(input_layer)
+
+# ----------------------------
+
+# Initialize the model
+
+# kernel_initializer = tf.keras.initializers.HeUniform()
+# x = tf.keras.layers.Dense(units=1280, input_shape=(None, 7, 7, 1280), kernel_initializer=kernel_initializer)(x)
+
+# OR
+
+# x = base_model(x, training=False)  # allows inference/prediction calling
+x = base_model(x)
+
+# OR
+
+# x = base_model(input_layer)
+                      
+# ----------------------------
+# The model is trainned on many classes, but we want it to predict for two classes only.
+# If the model is overly sensitive to predicting many things, it is overfitted, so one
+# needs to make the model less sensitive [or reduce the complexity of the model]. Thus, 
+# Averaging, Dropping out values, and normalizing are logical stratigies for making predictions
+# less sensitive (ie: smoothing the loss function)
+# ----------------------------
+
+# Put a global averaging layer after the pre-trained weights
+x = tf.keras.layers.GlobalAveragePooling2D()(x)
+
+# ----------------------------
+
+# Add a Dropout layer to prevent overfitting
+x = tf.keras.layers.Dropout(0.2)(x)
+
+# OR 
+
+# x = tf.keras.layers.BatchNormalization(renorm=True)(x)
+# x = tf.keras.layers.Flatten()(x)
+
+# ----------------------------
+
+# Add a layer to output the number of new classes
+outputs = tf.keras.layers.Dense(1, activation='sigmoid', name='outputs')(x)
+# OR
+# outputs = tf.keras.layers.Dense(2, activation='softmax', name='outputs')(x)
+
+model = tf.keras.Model(input_layer, outputs)
+
+----------------------------------------------
+
+model.summary()
+
+# Compile the model
+base_learning_rate = 0.0001
+base_learning_rate = 0.001
+
+# from_logits=False tells BinaryCrossentropy to NOT calculate sigmoid, one does
+# not want to calculate sigmoid because the activation 
+# function (sigmoid) was already specified in the last Dense layer of the model
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rate),
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+              metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0, name='accuracy')])
+
+# OR
+
+# model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
+
+----------------------------------------------
+
+# View the number of model layers that can be trained
+len(model.trainable_variables)
+
+NUM_TRAINING_IMAGES = len(X_train_filtered)
+print('NUM_TRAINING_IMAGES: ', NUM_TRAINING_IMAGES)
+# ----------------------------
+# Learning is very slow
+STEPS_PER_EPOCH = NUM_TRAINING_IMAGES // BATCH_SIZE
+# OR
+# STEPS_PER_EPOCH = 4 * (NUM_TRAINING_IMAGES // BATCH_SIZE)
+# ----------------------------
+
+print('STEPS_PER_EPOCH: ', STEPS_PER_EPOCH)
+
+EPOCHS = 20
+
+----------------------------------------------
+
+# Train the model: see if the loss and accuracy can be better for this dataset
+history = model.fit(train_ds, 
+                    validation_data=test_ds,
+                    epochs=EPOCHS, 
+                    steps_per_epoch=STEPS_PER_EPOCH,
+                    # callbacks=[lr_callback],
+                   )
+
+
+fine_tune_epochs = 10
+total_epochs =  initial_epochs + fine_tune_epochs
+
+history_fine = model.fit(train_dataset,
+                         epochs=total_epochs,
+                         initial_epoch=history.epoch[-1],
+                         validation_data=validation_dataset)
+
+plotting_training_results(history)
+
+----------------------------------------------
+
+
+----------------------------------------------
+## Way 3: Model by hand
+----------------------------------------------
+def model_for_details(w, h, rgb):
+    
+    model = tf.keras.models.Sequential()
+    
+    initializer = tf.keras.initializers.HeUniform()
+    model.add(tf.keras.layers.Conv2D(filters=8, strides=(3,3), activation='relu', kernel_initializer=initializer, input_shape=(w, h, rgb)))
+    model.add(tf.keras.layers.Conv2D(filters=8, strides=(3,3), activation='relu', padding='same', kernel_regularizer=kernel_regularizer))
+    model.add(tf.keras.layers.MaxPooling2D(2, 2))
+    
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(32, activation='relu'))
+    
+    kernel_regularizer=tf.keras.regularizers.l2(0.1)   # Regularization
+    model.add(tf.keras.layers.Dense(1, activation='sigmoid', kernel_regularizer=kernel_regularizer))
+    
+    # model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+    
+    return model
+
+----------------------------------------------
+
+def MPCNN_arch(w, h, rgb):
+    
+    model = tf.keras.models.Sequential()
+    
+    initializer = tf.keras.initializers.HeUniform()
+    model.add(tf.keras.layers.Conv2D(8, (3,3), activation='relu', kernel_initializer=initializer, input_shape=(w, h, rgb)))
+    model.add(tf.keras.layers.MaxPooling2D(2, 2))
+    
+    model.add(tf.keras.layers.Conv2D(16, (3,3), activation='relu', input_shape=(w, h, rgb)))
+    model.add(tf.keras.layers.MaxPooling2D(2, 2))
+    
+    model.add(tf.keras.layers.Conv2D(32, (3,3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(2,2))
+    
+    model.add(tf.keras.layers.Conv2D(64, (3,3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(2,2))
+    
+    model.add(tf.keras.layers.Conv2D(128, (3,3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(2,2))
+    model.add(tf.keras.layers.Conv2D(256, (3,3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(2,2))
+    model.add(tf.keras.layers.Flatten())
+    
+    
+    model.add(tf.keras.layers.Dense(128, activation='relu'))
+    # model.add(tf.keras.layers.Dense(512, activation='relu'))
+    
+    kernel_regularizer=tf.keras.regularizers.l2(0.1)   # Regularization
+    model.add(tf.keras.layers.Dense(1, activation='sigmoid', kernel_regularizer=kernel_regularizer))
+    
+    # model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+    
+    return model
+
+
+----------------------------------------------
+
+def BatchPoolingDropout_w_regularization_arch(w, h, rgb):
+    
+    model = tf.keras.models.Sequential()
+    
+    initializer = tf.keras.initializers.HeUniform()
+    kernel_regularizer=tf.keras.regularizers.l2(0.0001)   # Regularization
+    
+    model.add(tf.keras.layers.Conv2D(32, (3,3), activation='relu', kernel_regularizer=kernel_regularizer, input_shape=(w, h, rgb)))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Conv2D(32, (3,3), activation='relu', kernel_regularizer=kernel_regularizer, padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.MaxPooling2D(2, 2))
+    model.add(tf.keras.layers.Dropout(0.2))
+    
+    model.add(tf.keras.layers.Conv2D(64, (3,3), activation='relu', kernel_regularizer=kernel_regularizer, padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Conv2D(64, (3,3), activation='relu', kernel_regularizer=kernel_regularizer, padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.MaxPooling2D(2, 2))
+    model.add(tf.keras.layers.Dropout(0.3))
+    
+    model.add(tf.keras.layers.Conv2D(128, (3,3), activation='relu', kernel_regularizer=kernel_regularizer, padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Conv2D(128, (3,3), activation='relu', kernel_regularizer=kernel_regularizer, padding='same'))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.MaxPooling2D(2, 2))
+    model.add(tf.keras.layers.Dropout(0.3))
+    
+    
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(128, activation='relu'))
+    
+    # 
+    # model.add(tf.keras.layers.Dense(1, activation='sigmoid', kernel_regularizer=kernel_regularizer))
+    model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+    
+    return model
+
+----------------------------------------------
+
+def MPCNN_arch_edge_detection(w, h):
+    
+    # Functional API format
+    
+    input_layer = tf.keras.layers.Input(shape=(w, h, 1), dtype='float32')
+    
+    # ----------------------------
+    
+    # It rotates/zooms/alters the existing images, it DOES NOT increase the number of images
+    # x = data_rotation(input_layer)
+
+    # ----------------------------
+
+    # Scales the image value from -1 to 1
+    # preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
+    # x = preprocess_input(input_layer)
+
+    # ----------------------------
+    
+    # Add edge detection: it outputs grayscale
+    # x = edge_detection(input_layer)
+    # x = tf.reshape(x, [-1, w, h, 1])
+    
+    # ----------------------------
+    
+    initializer = tf.keras.initializers.HeUniform()
+    x = tf.keras.layers.Conv2D(8, (3,3), activation='relu', kernel_initializer=initializer, input_shape=(w, h, 1))(input_layer)
+    x = tf.keras.layers.MaxPooling2D(2, 2)(x)
+    
+    x = tf.keras.layers.Conv2D(16, (3,3), activation='relu')(x)
+    x = tf.keras.layers.MaxPooling2D(2, 2)(x)
+    
+    x = tf.keras.layers.Conv2D(32, (3,3), activation='relu')(x)
+    x = tf.keras.layers.MaxPooling2D(2,2)(x)
+    
+    x = tf.keras.layers.Conv2D(64, (3,3), activation='relu')(x)
+    x = tf.keras.layers.MaxPooling2D(2,2)(x)
+    
+    x = tf.keras.layers.Conv2D(128, (3,3), activation='relu')(x)
+    x = tf.keras.layers.MaxPooling2D(2,2)(x)
+    x = tf.keras.layers.Dropout(0.2)(x) 
+    
+    x = tf.keras.layers.Conv2D(256, (3,3), activation='relu')(x)
+    x = tf.keras.layers.MaxPooling2D(2,2)(x)
+    x = tf.keras.layers.Dropout(0.2)(x) # Add a Dropout layer to prevent overfitting
+    
+    x = tf.keras.layers.Flatten()(x)
+    
+    x = tf.keras.layers.Dense(512, activation='relu')(x)
+    
+    # kernel_regularizer=tf.keras.regularizers.l2(0.1)   # Regularization (Tensorflow.js can not recognize regularization in model.json file)
+    # outputs = tf.keras.layers.Dense(1, activation='sigmoid', kernel_regularizer=kernel_regularizer)(x)
+    outputs = tf.keras.layers.Dense(1, activation='sigmoid')(x)
+    
+    model = tf.keras.Model(inputs=input_layer, outputs=outputs)
+    
+    return model
+
+----------------------------------------------
+
+# model = MPCNN_arch(w, h, rgb)
+# model = model_for_details(w, h, rgb)
+# model = BatchPoolingDropout_w_regularization_arch(w, h, rgb)
+
+model = MPCNN_arch_edge_detection(w, h)  # Worked the best
+model
+
+----------------------------------------------
+
+NUM_TRAINING_IMAGES = len(X_train_filtered)
+print('NUM_TRAINING_IMAGES: ', NUM_TRAINING_IMAGES)
+# ----------------------------
+# Learning is very slow
+STEPS_PER_EPOCH = NUM_TRAINING_IMAGES // BATCH_SIZE
+# OR
+# STEPS_PER_EPOCH = 4 * (NUM_TRAINING_IMAGES // BATCH_SIZE)
+STEPS_PER_EPOCH = 10
+# ----------------------------
+
+print('STEPS_PER_EPOCH: ', STEPS_PER_EPOCH)
+
+EPOCHS = 200
+
+----------------------------------------------
+
+# Compile the model
+base_learning_rate = 0.001
+base_learning_rate = 0.0001
+
+# from_logits=False tells BinaryCrossentropy to NOT calculate sigmoid, one does
+# not want to calculate sigmoid because the activation 
+# function (sigmoid) was already specified in the last Dense layer of the model
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rate),
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+              metrics=[tf.keras.metrics.BinaryAccuracy(threshold=0, name='accuracy')])
+
+----------------------------------------------
+
+# Train the model: see if the loss and accuracy can be better for this dataset
+history = model.fit(train_ds, 
+                    validation_data=test_ds,
+                    epochs=EPOCHS, 
+                    steps_per_epoch=STEPS_PER_EPOCH,
+                    callbacks=[early_stopping]
+                   )
+
+plotting_training_results(history)
+----------------------------------------------
+
+# Testing inference of a functional model (Original, non-changed weights, changed weights, by hand)
+
+# Check that function is correct
+i = np.random.permutation(np.arange(len(X_test_filtered)))[0]
+image_3D = X_test_filtered[i]
+image_filter = edge_detection2(image_3D)
+
+image_4D = tf.reshape(image_filter, [1, w, h, 1])
+print('image_filter.shape: ', image_filter.shape)
+
+edge_detection_model_predictions = model.predict(image_4D)
+print('edge_detection_model_predictions: ', edge_detection_model_predictions)
+
+index = np.floor(edge_detection_model_predictions)
+
+if index ==  0:
+    pred_out = 'tomatoe'
+else:
+    pred_out = 'apple'
+
+# Plot the image
+plot_image = tf.reshape(image_filter, [w, h])
+# View a sample image
+fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+
+ax0.imshow(plot_image)
+ax0.axis('off')
+
+
+
+true_out = "tomatoe" if Y_test_filtered[i] == 0 else "apple"
+
+# ----------------------------------------------
+
+pretrained_model = tf.keras.applications.MobileNetV2()
+result = pretrained_model.predict(train_ds)  # Probabilities of each class
+predictions = tf.keras.applications.mobilenet_v2.decode_predictions(result)
+predictions
+
+
+ax0.set_title(f"i={i}, true={true_out}, pred={pred_out}, mobilenet={predictions[i][0][1]}", size=20)
+plt.show()
+
+# ----------------------------------------------
+
+
+
+----------------------------------------------
+# Save model files for Tensorflow.js
+----------------------------------------------
+
+# Way 0
+# Save the trained model as a Keras HDF5 file. 
+saved_model_path = "./my_model.h5"
+model.save(saved_model_path)
+
+----------------------------------------------
+
+# Use the tensorflow.js converter to convert the saved Keras model into JSON format.
+!tensorflowjs_converter --input_format=keras {saved_model_path} ./
+
+----------------------------------------------
+
+## Way 1
+import tensorflowjs as tfjs
+# Convert the saved model to TensorFlow.js format
+tfjs.converters.save_keras_model(model, 'tfjs_model')
+----------------------------------------------
+
+!cat /kaggle/working/tfjs_model/model.json
+----------------------------------------------
+
+
+----------------------------------------------
+
+
+----------------------------------------------
+# Send files to git
+----------------------------------------------
+!mkdir git2
+----------------------------------------------
+%%bash --err null
+cd /kaggle/working/git2
+git clone --recurse-submodules https://github.com/CodeSolutions2/test_4_webapps.git
+----------------------------------------------
+
+!ls /kaggle/working/git2/test_4_webapps
+
+----------------------------------------------
+
+!mkdir /kaggle/working/prev_model
+----------------------------------------------
+!ls /kaggle/working/prev_model
+----------------------------------------------
+!mv /kaggle/working/git2/test_4_webapps/model_prev.json /kaggle/working/prev_model
+----------------------------------------------
+!ls /kaggle/working/tfjs_model
+----------------------------------------------
+!cp -a /kaggle/working/tfjs_model/. /kaggle/working/git2/test_4_webapps
+# Copy the new files from tfjs_model to REPO folder
+----------------------------------------------
+!ls /kaggle/working/git2/test_4_webapps
+----------------------------------------------
+
+----------------------------------------------
+!git config --global user.name CodeSolutions2
+!git config --global user.email j622amilah@gmail.com
+!git config --global remote.origin.url https://github.com/CodeSolutions2/test_4_webapps.git
+----------------------------------------------
+!echo 'Pulling repo from GitHub'
+# Should be outside the git directory when initializing a local directory
+!mkdir /kaggle/working/git2/test_4_webapps/git2_pulled_folder
+!mkdir /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps
+----------------------------------------------
+
+    
+    
+
+
+# Initialize the local directory and set the initial branch name to main
+# Should be in git directory /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps
+# This puts the .git file in /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps 
+!git -C /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps init -b main
+
+# Pull Repository from github first, while synchronizing the branches
+# Should be in git directory /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps
+# git --git-dir=/path/to/repo/.git --work-tree=/path/to/repo pull origin main --allow-unrelated-histories
+!git --git-dir=/kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps/.git --work-tree=/kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps pull origin main --allow-unrelated-histories
+
+# Delete all the file except .git
+!mv /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps/.git /kaggle/working/git2/test_4_webapps/git2_pulled_folder
+!rm -rf /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps
+!mkdir /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps
+!mv /kaggle/working/git2/test_4_webapps/git2_pulled_folder/.git /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps
+
+# Remove .git from old folder; Leave the .git in the git2_pulled_folder because it gives the state of the files on the GitHub repo, we want to update this with the GitHub commands
+!rm -rf /kaggle/working/git2/test_4_webapps/.git
+
+# Copy the new files from my PC to the temp folder
+!cp -a /kaggle/working/git2/test_4_webapps/. /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps
+
+
+!echo 'Pushing changes back to repo on the main branch'
+# Should be in git directory when adding files to be updated
+# /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps
+
+# (if you want to add everything in the local repository that was specified in the config file)
+!git -C /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps add .
+# OR add a single file
+
+
+# Should be in git directory when commiting files
+!git -C /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps commit -m "comment"
+
+# Should be in git directory when pushing files to the main branch
+!git -C /kaggle/working/git2/test_4_webapps/git2_pulled_folder/test_4_webapps commit push origin main
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+# Send model to google storage
+----------------------------------------------
+# Copy-paste key.json generated on GCP
+----------------------------------------------
+!gcloud auth login --quiet --cred-file=key.json --force --project textprocessing1
+----------------------------------------------
+!gcloud storage cp model.json gs://tensorflowjsmodels0/
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+# References
+
+
+https://docs.aws.amazon.com/rekognition/latest/customlabels-dg/gs-step-get-a-prediction.html
+
+https://cloud.google.com/vision/docs/object-localizer?hl=en
+
+----------------------------------------------
+----------------------------------------------
+
+----------------------------------------------
+
+
+
+
+
+----------------------------------------------
+
+----------------------------------------------
+
+
+----------------------------------------------
+
+Extra
+## Data augmentation of each image using Keras layers
+# https://www.tensorflow.org/guide/keras/preprocessing_layers
+
+which_one = 'rotation'
+    
+if which_one == 'rotation_zoom':
+    data_augmentation = tf.keras.Sequential(
+        [tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomRotation(0.1),
+            tf.keras.layers.RandomZoom(0.1),
+        ])
+
+elif which_one == 'rotation':
+    data_augmentation = tf.keras.Sequential(
+        [tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomRotation(0.2)
+        ])
+
+else:
+    data_augmentation = tf.keras.layers.RandomFlip("horizontal")
+    
+# OR
+
+# data_augmentation = tf.keras.layers.RandomFlip("horizontal")
+# data_augmentation.adapt(ds)
+# ds = data_augmentation(ds)
+
+----------------------------------------------
+
+## Grayscale image
+image_path = '/kaggle/input/apples-or-tomatoes-image-classification/train/apples/img_p1_109.jpeg'
+image = tf.io.read_file(image_path)
+image = tf.io.decode_jpeg(image, channels=1)
+image = tf.image.resize(image, size=[w, h])
+image = image/255  # Scale image from -1 to 1
+image_3D = tf.image.convert_image_dtype(image, dtype=tf.float32)
+print('image_3D.shape: ', image_3D.shape)
+
+# -----------------------------
+
+fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+ax0.imshow(image_3D)
+ax0.axis('off')
+ax0.set_title(f"", size=20)
+plt.show()
+
+# -----------------------------
+
+# Vertical edge detection filter
+kernel = tf.constant([
+    [1, 0, -1],
+    [1, 0, -1],
+    [1, 0, -1],
+], dtype=tf.float32)
+
+kernel = tf.reshape(kernel, [*kernel.shape, 1, 1])
+kernel = tf.cast(kernel, dtype=tf.float32)
+print('kernel.shape: ', kernel.shape)
+
+# -----------------------------
+
+# tf.nn.conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None, name=None)
+# padding='SAME'
+padding='VALID'
+strides = 1
+
+image_4D = tf.expand_dims(image_3D, axis=0)
+print('image_4D.shape: ', image_4D.shape)
+
+image_filter = tf.nn.conv2d(image_4D, kernel, strides=strides, padding=padding)
+print('image_filter.shape: ', image_filter.shape)
+
+# -----------------------------
+
+fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+ax0.imshow(tf.squeeze(image_filter))
+ax0.axis('off')
+ax0.set_title(f"", size=20)
+plt.show()
+
+----------------------------------------------
+# Convert from grayscale to rgb
+rgb_image = tf.image.grayscale_to_rgb(image)
+fig, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(4,4))
+ax0.imshow(rgb_image)
+ax0.axis('off')
+ax0.set_title(f"", size=20)
+plt.show()
+
+----------------------------------------------
+
+
+
+out = []
+for layer in range(3):
+    
+    image_layer = image_3D[:,:,layer]
+    print('image_layer.shape: ', image_layer.shape)
+    # image_layer.shape:  (512, 512)
+    
+    # Reshape image
+    image_layer = tf.reshape(image_layer, [w, h, 1])
+    print('image_layer.shape: ', image_layer.shape)
+    # image_layer.shape:  (512, 512, 1)
+    
+    # Reshape image
+    image_layer = tf.expand_dims(image_layer, axis=0)
+    print('image_layer.shape: ', image_layer.shape)
+    # image_layer.shape:  (1, 512, 512, 1)
+    
+    image_filter = tf.nn.conv2d(image_layer, kernel, strides=strides, padding=padding)
+    print('image_filter.shape: ', image_filter.shape)
+    # image_filter.shape:  (1, 512, 512, 1)
+    
+    # image_4D[:,:,:,layer] = image_filter # it is non-mutable
+    # OR
+    out.append(image_filter)
+
+----------------------------------------------
+
+# Output side of matrix after strided convolution
+# Padded/Strided convolution: output layer width/height
+n = 512 # side of original image
+
+kernel_size = 3
+
+# example before
+padding = 0 # padding (for max_pooling p=0, this is called valid convolution when there is no padding)
+filters = 3 # side of kernel
+strides = 1 # stride
+# output layer width or height:  510.0 (strides = 1)
+# output layer width or height:  255.5  (strides = 2)
+
+# model 
+# padding = (filters - 1)/2  # padding='SAME'
+# filters = 8  # side of kernel
+# strides = 3
+# output layer width or height:  171.33333333333334 
+# Not an even number so why does the model run???
+
+# What I wish to do for pre-processing
+padding = (filters - 1)/2  # padding='SAME'
+# padding = 0  # padding='VALID'
+filters = 3 # side of kernel
+strides = 1   # (1, 1) # 1
+# output layer width or height:  517.0 (strides = 1)
+# output layer width or height:  259.0  (strides = 2)
+# CORRECT
+
+# n = 5
+# adding = 0  # padding='SAME'
+# filters = 2 # side of kernel
+# strides = 1   # (1, 1) # 1
+# output layer width or height:  4.0  CORRECT
+
+o = (n + 2*padding - filters)/strides + 1 # output layer width or height
+print('output layer width or height: ', o)
+
+
+----------------------------------------------
+
+# Shuffle the images
+shuf_ind = np.random.permutation(np.arange(len(X)))
+
+X1 = [X[i] for i in shuf_ind]
+Y1 = [Y[i] for i in shuf_ind]
+
+----------------------------------------------
+
+# EXERCISE: Fill in the missing code below.
+
+# Get the number of CPU cores. 
+cores = multiprocessing.cpu_count() # YOUR CODE HERE
+
+print(cores)
+
+# Parallelize the transformation of the train_dataset by using
+# the map operation with the number of parallel calls set to
+# the number of CPU cores.
+train_dataset = train_dataset.map(read_tfrecord, num_parallel_calls=cores) # YOUR CODE HERE
+
+----------------------------------------------
+
+# EXERCISE: Parallelize the extraction of the stored TFRecords of
+# the cats_vs_dogs dataset by using the interleave operation with
+# cycle_length = 4 and the number of parallel calls set to tf.data.experimental.AUTOTUNE.
+
+# train_dataset = train_dataset.interleave(lambda x,y: tf.data.Dataset.from_tensors(x), cycle_length=4, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+train_dataset = files.interleave(tf.data.TFRecordDataset,
+                                         cycle_length=4, 
+                                         num_parallel_calls=tf.data.experimental.AUTOTUNE)# YOUR CODE HERE
+
+----------------------------------------------
+
+# EXERCISE: Fill in the missing code below.
+
+def read_tfrecord(serialized_example):
+    
+    # Create the feature description dictionary
+    feature_description = {
+        'image': tf.io.FixedLenFeature((), tf.string, ""), 
+        'label': tf.io.FixedLenFeature((), tf.int64, -1),
+    }
+    # Parse the serialized_example and decode the image
+    example = tf.io.parse_single_example(serialized_example, feature_description)# YOUR CODE HERE
+    image = tf.io.decode_jpeg(example['image'], channels=3)# YOUR CODE HERE
+    
+    image = tf.cast(image, tf.float32)
+    
+    # Normalize the pixels in the image
+    image = image/255 # YOUR CODE HERE
+    
+    # Resize the image to (224, 224) using tf.image.resize
+    image = tf.image.resize(image, (224, 224))# YOUR CODE HERE
+    
+    return image, example['label']
+
+----------------------------------------------
+
+----------------------------------------------
+
+----------------------------------------------
+
+
+
+----------------------------------------------
+
+https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Basic_usage
+https://blog.tensorflow.org/2018/04/a-gentle-introduction-to-tensorflowjs.html
+https://js.tensorflow.org/api/1.0.0/
+
+----------------------------------------------
+
+----------------------------------------------
