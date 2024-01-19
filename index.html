@@ -16,8 +16,8 @@
    <label for="select_image">Select an image to classsify/label:</label>
    <select id="select_this_image">
         <option value="tomatoe">tomatoe</option>
-        <option value="apple0">apple</option>
-        <option value="apple1">apple</option>
+        <option value="apple0">apple0</option>
+        <option value="apple1">apple1</option>
    </select> 
 	
 <!-- Select model to classify -->
@@ -225,7 +225,7 @@
             // Give image to model
             const result = model.predict(resizedTensor); 
 		
-            if (result[0][0] < 0.1) {
+            if (result.mean() < 0.1) {
 		outp.innerHTML = "Tomatoe : " + result;
             } else {
 		outp.innerHTML = "Apple : " + result;
