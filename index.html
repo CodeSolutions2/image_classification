@@ -225,12 +225,12 @@
             // Give image to model
             const result = model.predict(resizedTensor); 
 		outp.innerHTML = result.mean();
-		
-            if (result.mean() < 0.05) {
-		outp.innerHTML = "Tomatoe : " + result;
-            } else {
-		outp.innerHTML = "Apple : " + result;
-            } 
+		 
+            //if (result.mean() < 0.05) {
+		//outp.innerHTML = "Tomatoe : " + result;
+           //  } else {
+		// outp.innerHTML = "Apple : " + result;
+           //  } 
 		  
           };  // end of image.onload
 	  
