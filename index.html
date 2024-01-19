@@ -16,7 +16,8 @@
    <label for="select_image">Select an image to classsify/label:</label>
    <select id="select_this_image">
         <option value="tomatoe">tomatoe</option>
-        <option value="apple">apple</option>
+        <option value="apple0">apple</option>
+        <option value="apple1">apple</option>
    </select> 
 	
 <!-- Select model to classify -->
@@ -73,9 +74,10 @@
 
 	  var selected_image = document.getElementById("select_this_image").value;
 	  
-    	if (selected_image == 'apple') {
-          // load_image = "apple3D.png";
-		load_image = "apple3D_1.png";
+    	if (selected_image == 'apple0') {
+          load_image = "apple3D.png";
+    	} else if (selected_image == 'apple1') {
+          load_image = "apple3D_1.png";
 	} else if (selected_image == 'tomatoe') {
           load_image = "tomatoe3D.png";
 	} else {
@@ -223,8 +225,11 @@
             // Give image to model
             const result = model.predict(resizedTensor); 
 		
-            // if (result == ) {
-            outp.innerHTML = result;
+            if (result[0][0] < 0.1) {
+		outp.innerHTML = "Tomatoe : " + result;
+            } else {
+		outp.innerHTML = "Apple : " + result;
+            } 
 		  
           };  // end of image.onload
 	  
