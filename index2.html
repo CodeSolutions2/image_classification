@@ -134,7 +134,7 @@ async function get_urls_from_repo() {
 	
 	      image.src = url_vec[i];
 	
-	      await image.onload = async () => {
+	      image.onload = async () => {
 		      
 	        // Draw image on canvas
 	        document.getElementById("canvasId").style.display = "block";
