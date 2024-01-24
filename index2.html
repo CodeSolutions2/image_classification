@@ -69,7 +69,7 @@ async function runit() {
 
 	image.src = file.download_url;
 
-	image.onload = function async (){
+	image.onload = function (){
 		      
 	        // Draw image on canvas
 	        canvasElement.style.display = "block";
@@ -82,7 +82,7 @@ async function runit() {
 	        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
 		      
 	        // Give image to model
-	        await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+	        mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
 			
       };  // end of image.onload
 
