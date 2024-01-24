@@ -6,11 +6,7 @@
   <h1 style='text-align: center; margin-bottom: -35px;'>CodeSolution2 - Image labeling webapp: Read files from URL and output label</h1>
   <br><br>
 
-
 <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
-
-
-  
   
 <style>canvas {border: 1px solid black;}</style>
 
@@ -69,7 +65,7 @@ async function runit() {
 
 	image.src = file.download_url;
 
-	image.onload = function (){
+	image.onload = async () => {
 		      
 	        // Draw image on canvas
 	        canvasElement.style.display = "block";
@@ -82,7 +78,7 @@ async function runit() {
 	        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
 		      
 	        // Give image to model
-	        mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+	        await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
 			
       };  // end of image.onload
 
