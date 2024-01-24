@@ -26,7 +26,7 @@
   // -------------------------------------------------
 
   // Taking care of the browser-specific prefixes.
-  window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
+  //window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
 
   // Taking care of the browser-specific prefixes.
   window.requestFileSystemSync = window.webkitRequestFileSystemSync || window.requestFileSystemSync;
@@ -41,23 +41,24 @@ function getAllEntries(dirReader) {
 
   for (const entry of entries) {
     // Stash this entry's filesystem in URL
-    paths.push(entry.toURL());
+	  const filepath = entry.toURL();
+    paths.push(filepath);
+
+	  outp.innerHTML = filepath;
 
     // If this is a directory, traverse.
-    if (entry.isDirectory) {
-      getAllEntries(entry.createReader());
-    }
+    // if (entry.isDirectory) {
+    //   getAllEntries(entry.createReader());
+    // }
   }
 }
 
   // -------------------------------------------------
 
   try {
-    const fs = requestFileSystemSync(TEMPORARY, 1024 * 1024 /*1MB*/);
+    const fs = requestFileSystemSync(window.TEMPORARY, 1024 * 1024 /*1MB*/);
 
     getAllEntries(fs.root.createReader());
-
-    self.postMessage({ entries: paths });
 	  
   } catch (error) {
     outp.innerHTML = error;
