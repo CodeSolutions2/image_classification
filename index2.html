@@ -89,9 +89,24 @@ async function get_urls_from_repo() {
     await mobilenet.load().then(model => {
 
     for (var i=0; i < url_vec.length; i++){
-	    
+
+	// ---------------------------
         // Create a canvas for first image
-	create_dynamic_canvasElement();
+	// create_dynamic_canvasElement();
+	// ---------------------------
+	// Create a canvas element
+	var canvasElement = document.createElement('canvas');
+
+	// Set the width and height of the canvas
+	canvasElement.width = 224;
+	canvasElement.height = canvasElement.width;
+	      
+	// Get the 2D rendering context of the canvas
+	const ctx = canvasElement.getContext("2d");
+	      
+	// Add the canvas to the document body or any other desired element
+	document.body.appendChild(canvasElement);
+	// ---------------------------
 
         const image = new Image();
         image.src = url_vec[i];
@@ -127,8 +142,23 @@ async function get_urls_from_repo() {
 
       for (var i=0; i < url_vec.length; i++){
 		    
-	      // Create a canvas for first image
-	      create_dynamic_canvasElement();
+	      // ---------------------------
+        // Create a canvas for first image
+	// create_dynamic_canvasElement();
+	// ---------------------------
+	// Create a canvas element
+	var canvasElement = document.createElement('canvas');
+
+	// Set the width and height of the canvas
+	canvasElement.width = 224;
+	canvasElement.height = canvasElement.width;
+	      
+	// Get the 2D rendering context of the canvas
+	const ctx = canvasElement.getContext("2d");
+	      
+	// Add the canvas to the document body or any other desired element
+	document.body.appendChild(canvasElement);
+	// ---------------------------
 			    
 	      const image = new Image();
 	
