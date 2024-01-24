@@ -74,7 +74,7 @@ function readDirectory(directory) {
 
 
   // -------------------------------------------------
-
+async runit() {
   try {
     // Way 0
     // const fs = requestFileSystemSync(window.TEMPORARY, 1024 * 1024 /*1MB*/);
@@ -119,6 +119,9 @@ const repoName = 'test_4_webapps';
   } catch (error) {
     outp.innerHTML = error;
   }
+
+}
+runit();
 
   // -------------------------------------------------
 
