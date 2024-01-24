@@ -26,10 +26,11 @@
   // -------------------------------------------------
 
   // Taking care of the browser-specific prefixes.
-  window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
+  // window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
 
   // Taking care of the browser-specific prefixes.
-  window.requestFileSystemSync = window.webkitRequestFileSystemSync || window.requestFileSystemSync;
+  // window.requestFileSystemSync = window.webkitRequestFileSystemSync || window.requestFileSystemSync;
+  // TypeError: requestFileSystemSync is not a function
 
   // Global for holding the list of entry file system URLs.
   const paths = [];
@@ -41,24 +42,50 @@ function getAllEntries(dirReader) {
 
   for (const entry of entries) {
     // Stash this entry's filesystem in URL
-	  const filepath = entry.toURL();
+    const filepath = entry.toURL();
     paths.push(filepath);
-
-	  outp.innerHTML = filepath;
-
-    // If this is a directory, traverse.
-    // if (entry.isDirectory) {
-    //   getAllEntries(entry.createReader());
-    // }
+    outp.innerHTML = filepath;
   }
 }
 
   // -------------------------------------------------
+	
+function readDirectory(directory) {
+  let dirReader = directory.createReader();
+  let entries = [];
+
+  let getEntries = () => {
+    dirReader.readEntries(
+      (results) => {
+        if (results.length) {
+          entries = entries.concat(toArray(results));
+          getEntries();
+        }
+      },
+      (error) => {
+        /* handle error — error is a FileError object */
+      },
+    );
+  };
+
+  getEntries();
+  return entries;
+}
+
+
+  // -------------------------------------------------
 
   try {
-    const fs = requestFileSystemSync(window.TEMPORARY, 1024 * 1024 /*1MB*/);
+    // Way 0
+    // const fs = requestFileSystemSync(window.TEMPORARY, 1024 * 1024 /*1MB*/);
+    // getAllEntries(fs.root.createReader());
 
-    getAllEntries(fs.root.createReader());
+    // Way 1
+	  const directory = "https:github.com/CodeSolutions2/test_4_webapps";
+    var entries = readDirectory(directory);
+	  for (var i=0; i<entries.length; i++){
+		  outp.innerHTML += "<br/>" + entries[i];
+	  }
 	  
   } catch (error) {
     outp.innerHTML = error;
