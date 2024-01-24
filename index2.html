@@ -69,21 +69,21 @@ async function runit() {
 
 	image.src = file.download_url;
 
-	image.onload = function (){
-	      
-        // Draw image on canvas
-        canvasElement.style.display = "block";
-        ctx.drawImage(image, 0,0);
-	      
-        // Convert the image element to a tensor using fromPixels
-        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-	outp.innerHTML = tf.max(tensor_image);
-		
-        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
-	      
-        // Give image to model
-        await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
-		
+	image.onload = function async (){
+		      
+	        // Draw image on canvas
+	        canvasElement.style.display = "block";
+	        ctx.drawImage(image, 0,0);
+		      
+	        // Convert the image element to a tensor using fromPixels
+	        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+		outp.innerHTML = tf.max(tensor_image);
+			
+	        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+		      
+	        // Give image to model
+	        await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+			
       };  // end of image.onload
 
       }
