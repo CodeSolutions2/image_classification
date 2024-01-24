@@ -41,10 +41,10 @@ async function runit() {
     // TypeError: directory.createReader is not a function
 
     // Way 2
-	  const repoOwner = 'CodeSolutions2';
-const repoName = 'test_4_webapps';
-	  var url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
-	  //var options = {method : 'get', headers: headers, mode: 'no-cors'};
+    const repoOwner = 'CodeSolutions2';
+    const repoName = 'test_4_webapps';
+    var url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
+    //var options = {method : 'get', headers: headers, mode: 'no-cors'};
     await fetch(url).then(res => res.json()).then(data => {
 	    
 	    // const imageList = document.getElementById('image-list');
@@ -54,9 +54,41 @@ const repoName = 'test_4_webapps';
         // const listItem = document.createElement('li');
         // const image = document.createElement('img');
         
-        // image.src = file.download_url;
         outp.innerHTML += "Filename=" + file.name + ", file url=" + file.download_url + "<br/>";
 
+	// Create a canvas element
+	var canvasElement = document.createElement('canvas');
+
+	// Set the width and height of the canvas
+	canvasElement.width = 400;
+	canvasElement.height = 400;
+	      
+	// Get the 2D rendering context of the canvas
+	const ctx = canvasElement.getContext("2d");
+	      
+	// Add the canvas to the document body or any other desired element
+	document.body.appendChild(canvasElement);
+
+	const image = new Image();
+
+	image.src = file.download_url;
+
+	image.onload = function (){
+	      
+        // Draw image on canvas
+        canvasElement.style.display = "block";
+        ctx.drawImage(image, 0,0);
+	      
+        // Convert the image element to a tensor using fromPixels
+        // var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+	      
+        // const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+	      
+        // Give image to model
+        // mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+      };  // end of image.onload
+
+	      
         // listItem.appendChild(image);
         // imageList.appendChild(listItem);
       }
