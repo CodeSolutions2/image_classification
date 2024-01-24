@@ -63,7 +63,7 @@ async function get_urls_from_repo() {
     data.forEach(file => {
       if (file.type === 'file' && file.name.match(/.(jpg|jpeg|png|gif)$/i)) {
         
-        // outp.innerHTML += "Filename=" + file.name + ", file url=" + file.download_url + "<br/>";
+        //outp.innerHTML += "Filename=" + file.name + ", file url=" + file.download_url + "<br/>";
 	url_vec.push(file.download_url);
       }
     });
@@ -111,23 +111,25 @@ async function get_urls_from_repo() {
         const image = new Image();
         image.src = url_vec[i];
 
-	image.onload = async () => {
-
-	        // Draw image on canvas
-	        canvasElement.style.display = "block";
-	        ctx.drawImage(image, 0,0);
-		      
-	        // Convert the image element to a tensor using fromPixels
-	        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-		outp.innerHTML = tf.max(tensor_image);
+        async () => {
+		await image.onload = async () => {
+	
+		        // Draw image on canvas
+		        canvasElement.style.display = "block";
+		        ctx.drawImage(image, 0,0);
+			      
+		        // Convert the image element to a tensor using fromPixels
+		        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+			outp.innerHTML = tf.max(tensor_image);
+				
+		        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+				
+			await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 			
-	        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
-			
-		await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
-		
 		};  // end of image.onload
+        };
 
-	}  // end of for
+    }  // end of for
 	  
     });  // end of mobilenet.load()
 	  
@@ -167,7 +169,7 @@ async function get_urls_from_repo() {
 	      image.onload = async () => {
 		      
 	        // Draw image on canvas
-	        document.getElementById("canvasId").style.display = "block";
+	        //document.getElementById("canvasId").style.display = "block";
 	        ctx.drawImage(image, 0,0);
 		      
 	        // Convert the image element to a tensor using fromPixels
