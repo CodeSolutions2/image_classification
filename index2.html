@@ -5,7 +5,10 @@
 	
   <h1 style='text-align: center; margin-bottom: -35px;'>CodeSolution2 - Image labeling webapp: Read files from URL and output label</h1>
   <br><br>
-
+	<button id="get_urls_from_repo" onclick="get_urls_from_repo()" style="display:block">get_urls_from_repo</button>
+        <button id="run_mobilenet_way1" onclick="run_mobilenet_way1()" style="display:block">run_mobilenet_way1</button>
+	<button id="run_mobilenet_way0" onclick="run_mobilenet_way0()" style="display:block">run_mobilenet_way0</button>
+	
 <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
   
 <style>canvas {border: 1px solid black;}</style>
@@ -19,35 +22,12 @@
 	
   const outp = document.getElementById('output');
 
+  var url_vec = [];
+
   // -------------------------------------------------
+
+function create_dynamic_canvasElement() {
 	
-async function runit() {
-	
-  try {
-    // Way 0
-    // const fs = requestFileSystemSync(window.TEMPORARY, 1024 * 1024 /*1MB*/);
-    // getAllEntries(fs.root.createReader());
-
-    // Way 1
-    // const directory = "https:github.com/CodeSolutions2/test_4_webapps";
-    // var entries = readDirectory(directory);
-    // for (var i=0; i<entries.length; i++){
-    //		  outp.innerHTML += "<br/>" + entries[i];
-    //}
-    // TypeError: directory.createReader is not a function
-
-    // Way 2
-    const repoOwner = 'CodeSolutions2';
-    const repoName = 'test_4_webapps';
-    var url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
-    //var options = {method : 'get', headers: headers, mode: 'no-cors'};
-    await fetch(url).then(res => res.json()).then(data => {
-
-    data.forEach(file => {
-      if (file.type === 'file' && file.name.match(/.(jpg|jpeg|png|gif)$/i)) {
-        
-        outp.innerHTML += "Filename=" + file.name + ", file url=" + file.download_url + "<br/>";
-
 	// Create a canvas element
 	var canvasElement = document.createElement('canvas');
 
@@ -60,16 +40,60 @@ async function runit() {
 	      
 	// Add the canvas to the document body or any other desired element
 	document.body.appendChild(canvasElement);
+}
 
-	const image = new Image();
 
-	image.src = file.download_url;
-		      
-	// Give image to model
-	mobilenet.load().then(model => {
+  // -------------------------------------------------
+	
+async function get_urls_from_repo() {
+	
+  try {
+	  
+    const repoOwner = 'CodeSolutions2';
+    const repoName = 'test_4_webapps';
+    var url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
+    //var options = {method : 'get', headers: headers, mode: 'no-cors'};
+    await fetch(url).then(res => res.json()).then(data => {
 
-		image.onload = async () => {
-		      
+    data.forEach(file => {
+      if (file.type === 'file' && file.name.match(/.(jpg|jpeg|png|gif)$/i)) {
+        
+        // outp.innerHTML += "Filename=" + file.name + ", file url=" + file.download_url + "<br/>";
+	url_vec.push(file.download_url);
+      }
+    });
+  }).catch(error => { outp.innerHTML += error; });
+
+
+	  
+  } catch (error) {
+    outp.innerHTML = error;
+  }
+
+	return url_vec;
+}
+
+
+
+  // -------------------------------------------------
+
+  async function run_mobilenet_way1() {
+
+    // Load the model outside of loop, only classify in the for loop
+	  
+    // Load the model
+    mobilenet.load().then(model => {
+
+    for (var i=0; i < url_vec.length; i++){
+	    
+        // Create a canvas for first image
+	create_dynamic_canvasElement();
+
+        const image = new Image();
+        image.src = url_vec[i];
+
+	await image.onload = async () => {
+
 	        // Draw image on canvas
 	        canvasElement.style.display = "block";
 	        ctx.drawImage(image, 0,0);
@@ -84,27 +108,51 @@ async function runit() {
 		
 		};  // end of image.onload
 
-			
-	});
-      }
-    });
-  })
-  .catch(error => {
-    outp.innerHTML += error;
-  });
-
-
+	});  // end of mobilenet.load()
 	  
-  } catch (error) {
-    outp.innerHTML = error;
-  }
-
-}
-runit();
+    }
+	    
+	
 
   // -------------------------------------------------
+	
+  async function run_mobilenet_way0() {
 
+    try {
 
+      for (var i=0; i < url_vec.length; i++){
+		    
+	      // Create a canvas for first image
+	      create_dynamic_canvasElement();
+			    
+	      const image = new Image();
+	
+	      image.src = url_vec[i];
+	
+	      await image.onload = async () => {
+		      
+	        // Draw image on canvas
+	        document.getElementById("canvasId").style.display = "block";
+	        ctx.drawImage(image, 0,0);
+		      
+	        // Convert the image element to a tensor using fromPixels
+	        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+		      
+	        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+		      
+	        // Give image to model
+	        await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+	      };
+      }
+    
+    } catch (error) {
+      outp.innerHTML = error; 
+    }
+    
+  }  // end of run_mobilenet
+  
+  // -------------------------------------------------
+	
 </script>
 </body>
 </html>
