@@ -28,6 +28,9 @@
   // Taking care of the browser-specific prefixes.
   window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
 
+  // Taking care of the browser-specific prefixes.
+  window.requestFileSystemSync = window.webkitRequestFileSystemSync || window.requestFileSystemSync;
+
   // Global for holding the list of entry file system URLs.
   const paths = [];
 
