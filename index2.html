@@ -19,29 +19,48 @@
 
 <script>
 
+  // -------------------------------------------------
+	
+  const outp = document.getElementById('output');
 
-  
-// Taking care of the browser-specific prefixes.
-window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
+  // -------------------------------------------------
 
-// Create web workers
-const worker = new Worker("worker.js");
-  
-worker.onmessage = (e) => {
-  const urls = e.data.entries;
-  urls.forEach((url) => {
-    window.resolveLocalFileSystemURL(url, (fileEntry) => {
-      
-      // Print out file's name
-      outp.innerHTML = fileEntry.name;
-      
-    });
-  });
-};
+  // Taking care of the browser-specific prefixes.
+  window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
 
-worker.postMessage({ cmd: "list" });
+  // Global for holding the list of entry file system URLs.
+  const paths = [];
 
+  // -------------------------------------------------
+	
+function getAllEntries(dirReader) {
+  const entries = dirReader.readEntries();
 
+  for (const entry of entries) {
+    // Stash this entry's filesystem in URL
+    paths.push(entry.toURL());
+
+    // If this is a directory, traverse.
+    if (entry.isDirectory) {
+      getAllEntries(entry.createReader());
+    }
+  }
+}
+
+  // -------------------------------------------------
+
+  try {
+    const fs = requestFileSystemSync(TEMPORARY, 1024 * 1024 /*1MB*/);
+
+    getAllEntries(fs.root.createReader());
+
+    self.postMessage({ entries: paths });
+	  
+  } catch (error) {
+    outp.innerHTML = error;
+  }
+
+  // -------------------------------------------------
 
 
 </script>
