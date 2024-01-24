@@ -79,7 +79,6 @@ async function get_urls_from_repo() {
 }
 
 
-
   // -------------------------------------------------
 
   async function run_mobilenet_way1() {
@@ -113,10 +112,11 @@ async function get_urls_from_repo() {
 		
 		};  // end of image.onload
 
-	});  // end of mobilenet.load()
+	}  // end of for
 	  
-    }
-	    
+    });  // end of mobilenet.load()
+	  
+}  // end of run_mobilenet_way1
 	
 
   // -------------------------------------------------
@@ -154,7 +154,7 @@ async function get_urls_from_repo() {
       outp.innerHTML = error; 
     }
     
-  }  // end of run_mobilenet
+  }  // end of run_mobilenet_way0
   
   // -------------------------------------------------
 	
