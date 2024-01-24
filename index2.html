@@ -111,8 +111,7 @@ async function get_urls_from_repo() {
         const image = new Image();
         image.src = url_vec[i];
 
-        async () => {
-		await image.onload = async () => {
+        image.onload = async () => {
 	
 		        // Draw image on canvas
 		        canvasElement.style.display = "block";
@@ -127,7 +126,6 @@ async function get_urls_from_repo() {
 			await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 			
 		};  // end of image.onload
-        };
 
     }  // end of for
 	  
