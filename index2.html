@@ -24,56 +24,6 @@
   const outp = document.getElementById('output');
 
   // -------------------------------------------------
-
-  // Taking care of the browser-specific prefixes.
-  // window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
-
-  // Taking care of the browser-specific prefixes.
-  // window.requestFileSystemSync = window.webkitRequestFileSystemSync || window.requestFileSystemSync;
-  // TypeError: requestFileSystemSync is not a function
-
-  // Global for holding the list of entry file system URLs.
-  const paths = [];
-
-  // -------------------------------------------------
-	
-function getAllEntries(dirReader) {
-  const entries = dirReader.readEntries();
-
-  for (const entry of entries) {
-    // Stash this entry's filesystem in URL
-    const filepath = entry.toURL();
-    paths.push(filepath);
-    outp.innerHTML = filepath;
-  }
-}
-
-  // -------------------------------------------------
-	
-function readDirectory(directory) {
-  let dirReader = directory.createReader();
-  let entries = [];
-
-  let getEntries = () => {
-    dirReader.readEntries(
-      (results) => {
-        if (results.length) {
-          entries = entries.concat(toArray(results));
-          getEntries();
-        }
-      },
-      (error) => {
-        /* handle error — error is a FileError object */
-      },
-    );
-  };
-
-  getEntries();
-  return entries;
-}
-
-
-  // -------------------------------------------------
 	
 async function runit() {
 	
