@@ -1945,6 +1945,23 @@ https://js.tensorflow.org/api/1.0.0/
 
 ----------------------------------------------
 
+
+
+
+----------------------------------------------
+
+  // Way 0
+    // const fs = requestFileSystemSync(window.TEMPORARY, 1024 * 1024 /*1MB*/);
+    // getAllEntries(fs.root.createReader());
+
+    // Way 1
+    // const directory = "https:github.com/CodeSolutions2/test_4_webapps";
+    // var entries = readDirectory(directory);
+    // for (var i=0; i<entries.length; i++){
+    //		  outp.innerHTML += "<br/>" + entries[i];
+    //}
+    // TypeError: directory.createReader is not a function
+
 ----------------------------------------------
   // Taking care of the browser-specific prefixes.
   // window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
