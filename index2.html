@@ -81,11 +81,40 @@ function readDirectory(directory) {
     // getAllEntries(fs.root.createReader());
 
     // Way 1
-	  const directory = "https:github.com/CodeSolutions2/test_4_webapps";
-    var entries = readDirectory(directory);
-	  for (var i=0; i<entries.length; i++){
-		  outp.innerHTML += "<br/>" + entries[i];
-	  }
+    // const directory = "https:github.com/CodeSolutions2/test_4_webapps";
+    // var entries = readDirectory(directory);
+    // for (var i=0; i<entries.length; i++){
+    //		  outp.innerHTML += "<br/>" + entries[i];
+    //}
+    // TypeError: directory.createReader is not a function
+
+    // Way 2
+	  const repoOwner = 'CodeSolutions2';
+const repoName = 'test_4_webapps';
+	  var url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
+	  //var options = {method : 'get', headers: headers, mode: 'no-cors'};
+    await fetch(url).then(res => res.json()).then(data => {
+	    
+	    // const imageList = document.getElementById('image-list');
+
+    data.forEach(file => {
+      if (file.type === 'file' && file.name.match(/.(jpg|jpeg|png|gif)$/i)) {
+        // const listItem = document.createElement('li');
+        // const image = document.createElement('img');
+        
+        // image.src = file.download_url;
+        outp.innerHTML += "Filename=" + file.name + ", file url=" file.download_url + "<br/>";
+
+        // listItem.appendChild(image);
+        // imageList.appendChild(listItem);
+      }
+    });
+  })
+  .catch(error => {
+    outp.innerHTML += error;
+  });
+
+
 	  
   } catch (error) {
     outp.innerHTML = error;
