@@ -64,11 +64,9 @@ async function runit() {
 	const image = new Image();
 
 	image.src = file.download_url;
-
-	
 		      
 	// Give image to model
-	await mobilenet.load().then(model => {
+	mobilenet.load().then(model => {
 
 		image.onload = async () => {
 		      
