@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+	
+  <h1 style='text-align: center; margin-bottom: -35px;'>CodeSolution2 - Image labeling webapp: Read files from URL and output label</h1>
+  <br><br>
+
+
+<div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
+
+
+  
+  
+<style>canvas {border: 1px solid black;}</style>
+
+<!--  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script> -->
+<!--  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"></script>  -->
+
+<script>
+
+
+  
+// Taking care of the browser-specific prefixes.
+window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
+
+// Create web workers
+const worker = new Worker("worker.js");
+  
+worker.onmessage = (e) => {
+  const urls = e.data.entries;
+  urls.forEach((url) => {
+    window.resolveLocalFileSystemURL(url, (fileEntry) => {
+      
+      // Print out file's name
+      outp.innerHTML = fileEntry.name;
+      
+    });
+  });
+};
+
+worker.postMessage({ cmd: "list" });
+
+
+
+
+</script>
+</body>
+</html>
