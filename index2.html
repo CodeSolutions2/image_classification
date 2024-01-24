@@ -14,8 +14,8 @@
   
 <style>canvas {border: 1px solid black;}</style>
 
-<!--  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script> -->
-<!--  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"></script>  -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"></script>
 
 <script>
 
@@ -46,13 +46,9 @@ async function runit() {
     var url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
     //var options = {method : 'get', headers: headers, mode: 'no-cors'};
     await fetch(url).then(res => res.json()).then(data => {
-	    
-	    // const imageList = document.getElementById('image-list');
 
     data.forEach(file => {
       if (file.type === 'file' && file.name.match(/.(jpg|jpeg|png|gif)$/i)) {
-        // const listItem = document.createElement('li');
-        // const image = document.createElement('img');
         
         outp.innerHTML += "Filename=" + file.name + ", file url=" + file.download_url + "<br/>";
 
@@ -60,8 +56,8 @@ async function runit() {
 	var canvasElement = document.createElement('canvas');
 
 	// Set the width and height of the canvas
-	canvasElement.width = 400;
-	canvasElement.height = 400;
+	canvasElement.width = 224;
+	canvasElement.height = canvasElement.width;
 	      
 	// Get the 2D rendering context of the canvas
 	const ctx = canvasElement.getContext("2d");
@@ -80,17 +76,15 @@ async function runit() {
         ctx.drawImage(image, 0,0);
 	      
         // Convert the image element to a tensor using fromPixels
-        // var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
 	      
-        // const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
 	      
         // Give image to model
-        // mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+        mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+		
       };  // end of image.onload
 
-	      
-        // listItem.appendChild(image);
-        // imageList.appendChild(listItem);
       }
     });
   })
