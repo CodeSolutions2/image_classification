@@ -2,12 +2,17 @@
 <html>
 <head></head>
 <body>
-	
+
+  <!-- Automatic image classification/labeling webapp -->
+  <!-- https://js.tensorflow.org/api/1.0.0/ -->
   <h1 style='text-align: center; margin-bottom: -35px;'>CodeSolution2 - Image labeling webapp: Read files from URL and output label</h1>
   <br><br>
 	<button id="get_urls_from_repo" onclick="get_urls_from_repo()" style="display:block">get_urls_from_repo</button>
+	<br>
         <button id="run_mobilenet_way1" onclick="run_mobilenet_way1()" style="display:block">run_mobilenet_way1</button>
+	<br>
 	<button id="run_mobilenet_way0" onclick="run_mobilenet_way0()" style="display:block">run_mobilenet_way0</button>
+	<br>
 	
 <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
   
@@ -82,7 +87,7 @@ async function get_urls_from_repo() {
     // Load the model outside of loop, only classify in the for loop
 	  
     // Load the model
-    mobilenet.load().then(model => {
+    await mobilenet.load().then(model => {
 
     for (var i=0; i < url_vec.length; i++){
 	    
@@ -92,7 +97,7 @@ async function get_urls_from_repo() {
         const image = new Image();
         image.src = url_vec[i];
 
-	await image.onload = async () => {
+	image.onload = async () => {
 
 	        // Draw image on canvas
 	        canvasElement.style.display = "block";
