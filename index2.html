@@ -111,7 +111,7 @@ async function get_urls_from_repo() {
         const image = new Image();
         image.src = url_vec[i];
 
-        image.onload = async () => {
+        await image.onload = async () => {
 	
 		        // Draw image on canvas
 		        canvasElement.style.display = "block";
