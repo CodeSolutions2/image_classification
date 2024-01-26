@@ -81,10 +81,10 @@ async function get_urls_from_repo() {
 
   // -------------------------------------------------
 
-// async function load_model(){
-// 	const model = await mobilenet.load().then(model => { return model});
-// }
-// load_model();
+async function load_model(){
+	const model = await mobilenet.load().then(model => { return model});
+}
+load_model();
 	
   // -------------------------------------------------
 
@@ -98,7 +98,7 @@ async function get_urls_from_repo() {
     outp.innerHTML += 'url_vec: ' + url_vec;
 	  
     // Load the model
-    await mobilenet.load().then(model => {
+  //  await mobilenet.load().then(model => {
 
     url_vec.forEach(function(url, index) {
 		// ---------------------------
@@ -144,7 +144,7 @@ async function get_urls_from_repo() {
 				
 		        const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
 				
-			// await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+			await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 			
         };  // end of image.onload
 
@@ -153,7 +153,7 @@ async function get_urls_from_repo() {
 
 	});  // end of image.forEach
 
-    });  // mobilenet.load()
+   // });  // mobilenet.load()
 
 	  
 }  // end of run_mobilenet_way1
