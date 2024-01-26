@@ -123,6 +123,9 @@ async function call_stuff_in_forloop(i){
 
         const image = new Image();
 
+        // Add 'crossorigin' attribute to bypass insecure error
+        image.crossOrigin = "anonymous";
+	    
 	// Way 0
 	// image.src = await Promise.resolve(url);
 
