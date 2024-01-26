@@ -83,8 +83,10 @@ async function get_urls_from_repo() {
 
 async function load_model(){
 	const model = await mobilenet.load().then(model => { return model});
+
+	return model;
 }
-load_model();
+const model = load_model();
 	
   // -------------------------------------------------
 
