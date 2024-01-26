@@ -122,8 +122,9 @@ load_model();
         // image.complete: true after I added await
         outp.innerHTML += 'image.complete: ' + image.complete;
 
-		    
-        await image.onload = async () => {
+
+	    
+        image.onload = async () => {
 	
 		        // Draw image on canvas
 		        canvasElement.style.display = "block";
@@ -174,7 +175,8 @@ load_model();
 			    
 	      const image = new Image();
 	
-	      await image.src = url_vec[i];
+	      // await image.src = url_vec[i];  // incorrect
+	      image.src = await Promise.resolve(url_vec[i]);
 	
 	      image.onload = async () => {
 		      
