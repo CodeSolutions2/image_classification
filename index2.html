@@ -90,7 +90,20 @@ load_model();
 	
 async function call_stuff_in_forloop(i){
 
-	// ---------------------------
+	
+}
+	
+  // -------------------------------------------------
+
+  async function run_mobilenet_way1() {
+
+    // Load the model outside of loop, only classify in the for loop
+	  
+    // Load the model
+    // await mobilenet.load().then(model => {
+
+    url_vec.forEach(function(url, index) {
+		// ---------------------------
         // Create a canvas for first image
 	// create_dynamic_canvasElement();
 	// ---------------------------
@@ -110,14 +123,13 @@ async function call_stuff_in_forloop(i){
 
         const image = new Image();
 
-	image.src = await Promise.resolve(url_vec[i]);
+	// Way 0
+	// image.src = await Promise.resolve(url);
 
         // image.complete: true after I added await
         outp.innerHTML += 'image.complete: ' + image.complete;
 
-
-	    
-        await image.onload = async () => {
+        image.onload = async () => {
 	
 		        // Draw image on canvas
 		        canvasElement.style.display = "block";
@@ -131,25 +143,13 @@ async function call_stuff_in_forloop(i){
 				
 			//await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 			
-		};  // end of image.onload
-}
-	
-  // -------------------------------------------------
+        };  // end of image.onload
 
-  async function run_mobilenet_way1() {
+	// Way 1:
+	image.src = url;
 
-    // Load the model outside of loop, only classify in the for loop
-	  
-    // Load the model
-    // await mobilenet.load().then(model => {
+	});  // end of image.forEach
 
-    for (var i=0; i < url_vec.length; i++){
-
-	await Promise.resolve(call_stuff_in_forloop(i););
-
-    }  // end of for
-	  
-    //});  // end of mobilenet.load()
 	  
 }  // end of run_mobilenet_way1
 	
