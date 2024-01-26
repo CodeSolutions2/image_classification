@@ -123,7 +123,7 @@ async function get_urls_from_repo() {
         image.crossOrigin = "anonymous";
 	    
 	// Way 0
-	// image.src = await Promise.resolve(url);
+	image.src = await Promise.resolve(url);
 
         // image.complete: true after I added await
         outp.innerHTML += 'image.complete: ' + image.complete;
@@ -136,7 +136,7 @@ async function get_urls_from_repo() {
 			      
 		        // Convert the image element to a tensor using fromPixels
 		        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-			outp.innerHTML = tf.max(tensor_image);
+			outp.innerHTML += tf.max(tensor_image);
 				
 		        const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
 				
@@ -145,7 +145,7 @@ async function get_urls_from_repo() {
         };  // end of image.onload
 
 	// Way 1:
-	image.src = url;
+	// image.src = url;
 
 	});  // end of image.forEach
 
