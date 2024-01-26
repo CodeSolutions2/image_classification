@@ -109,8 +109,9 @@ async function get_urls_from_repo() {
 	// ---------------------------
 
         const image = new Image();
-        image.src = url_vec[i];
+        await image.src = url_vec[i];
 
+        // image.complete: false , so the image is not loaded
         outp.innerHTML += 'image.complete: ' + image.complete;
 
 		    
