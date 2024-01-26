@@ -81,26 +81,22 @@ async function get_urls_from_repo() {
 
   // -------------------------------------------------
 
-async function load_model(){
-	const model = await mobilenet.load().then(model => { return model});
-}
-load_model();
-
-  // -------------------------------------------------
-	
-async function call_stuff_in_forloop(i){
-
-	
-}
+// async function load_model(){
+// 	const model = await mobilenet.load().then(model => { return model});
+// }
+// load_model();
 	
   // -------------------------------------------------
 
   async function run_mobilenet_way1() {
 
     // Load the model outside of loop, only classify in the for loop
+
+    var url_vec = await get_urls_from_repo();
+	  
 	  
     // Load the model
-    // await mobilenet.load().then(model => {
+    await mobilenet.load().then(model => {
 
     url_vec.forEach(function(url, index) {
 		// ---------------------------
@@ -144,7 +140,7 @@ async function call_stuff_in_forloop(i){
 				
 		        const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
 				
-			//await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+			await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 			
         };  // end of image.onload
 
@@ -152,6 +148,8 @@ async function call_stuff_in_forloop(i){
 	image.src = url;
 
 	});  // end of image.forEach
+
+    });  // mobilenet.load()
 
 	  
 }  // end of run_mobilenet_way1
