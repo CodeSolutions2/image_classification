@@ -79,23 +79,16 @@ async function get_urls_from_repo() {
 }
 
 
-
+  // -------------------------------------------------
 
 async function load_model(){
 	const model = await mobilenet.load().then(model => { return model});
 }
 load_model();
-	
+
   // -------------------------------------------------
-
-  async function run_mobilenet_way1() {
-
-    // Load the model outside of loop, only classify in the for loop
-	  
-    // Load the model
-    // await mobilenet.load().then(model => {
-
-    for (var i=0; i < url_vec.length; i++){
+	
+async function call_stuff_in_forloop(i){
 
 	// ---------------------------
         // Create a canvas for first image
@@ -124,7 +117,7 @@ load_model();
 
 
 	    
-        image.onload = async () => {
+        await image.onload = async () => {
 	
 		        // Draw image on canvas
 		        canvasElement.style.display = "block";
@@ -139,6 +132,20 @@ load_model();
 			//await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 			
 		};  // end of image.onload
+}
+	
+  // -------------------------------------------------
+
+  async function run_mobilenet_way1() {
+
+    // Load the model outside of loop, only classify in the for loop
+	  
+    // Load the model
+    // await mobilenet.load().then(model => {
+
+    for (var i=0; i < url_vec.length; i++){
+
+	await Promise.resolve(call_stuff_in_forloop(i););
 
     }  // end of for
 	  
