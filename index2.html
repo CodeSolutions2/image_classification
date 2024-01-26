@@ -93,7 +93,9 @@ async function get_urls_from_repo() {
     // Load the model outside of loop, only classify in the for loop
 
     var url_vec = await get_urls_from_repo();
-	  
+
+    // PRINT
+    outp.innerHTML += 'url_vec: ' + url_vec;
 	  
     // Load the model
     await mobilenet.load().then(model => {
@@ -123,9 +125,9 @@ async function get_urls_from_repo() {
         image.crossOrigin = "anonymous";
 	    
 	// Way 0
-	image.src = await Promise.resolve(url);
+	//image.src = await Promise.resolve(url);
 
-        // image.complete: true after I added await
+        // PRINT
         outp.innerHTML += 'image.complete: ' + image.complete;
 
         image.onload = async () => {
@@ -136,16 +138,18 @@ async function get_urls_from_repo() {
 			      
 		        // Convert the image element to a tensor using fromPixels
 		        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+
+		        // PRINT
 			outp.innerHTML += tf.max(tensor_image);
 				
 		        const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
 				
-			await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+			// await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 			
         };  // end of image.onload
 
 	// Way 1:
-	// image.src = url;
+	image.src = url;
 
 	});  // end of image.forEach
 
