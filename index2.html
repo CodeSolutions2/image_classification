@@ -168,9 +168,9 @@ function create_dynamic_canvasElement(index) {
 
 		    	// Call Model 1: edge_detection_model
 		    	await run_group_together(image, edgeDetection_model).then(datavec => { 
-				// outp.innerHTML += 'index: ' + index + "<br/>";
-				// outp.innerHTML += 'datavec[0][0]: ' + datavec[0][0] + "<br/>";
-				// outp.innerHTML += 'datavec[0][1]: ' + datavec[0][1] + "<br/>";
+				outp.innerHTML += 'index: ' + index + "<br/>";
+				outp.innerHTML += 'datavec[0][0]: ' + datavec[0][0] + "<br/>";
+				outp.innerHTML += 'datavec[0][1]: ' + datavec[0][1] + "<br/>";
 				
 				// Write model prediction on image
 				ctx.fillStyle = "#ffffff";  // Font color = white, 
