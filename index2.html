@@ -294,7 +294,7 @@ function create_dynamic_canvasElement() {
             const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
 		  
             // Give image to model
-            const result = model.predict(resizedTensor); 
+            const result = edgeDetection_model.predict(resizedTensor); 
 	    // outp.innerHTML = result.mean();
 			
 	    // Get probability value as a number
