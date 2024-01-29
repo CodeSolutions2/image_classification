@@ -105,7 +105,9 @@ function create_dynamic_canvasElement() {
 
     var pred_vec = [];
 	    
-    url_vec.forEach(function(url, index) {
+    async () => {
+	    
+	    url_vec.forEach(function(url, index) {
         
         // ---------------------------
         // Create a canvas for first image
@@ -144,6 +146,7 @@ function create_dynamic_canvasElement() {
 	    
 	// Save array to csv and download csv file
 	await downloadCSV(pred_vec);
+		}
 	    
    });  // mobilenet.load()
 
