@@ -136,7 +136,7 @@ function create_dynamic_canvasElement() {
 									});
 
 		    	// Save accumulated array as csv file at the last url entry
-		    	if (index == url_vec.length) {
+		    	if (index == url_vec.length-1) {
 				// data accumulates correctly in pred_vec, here:
 				outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
 				
