@@ -187,12 +187,17 @@ load_model();
 	const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
 	outp.innerHTML += eTensor.shape + "<br/>";
 
+	// Test if eTensor 
 	// await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 	// OR
 	// await model.classify(image).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 	// OR
+	// OR
 	// Just list the first prediction choice
-	await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; } });
+	await model.classify(eTensor).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; });
+	// OR
+	// Just list the first prediction choice
+	// await mobilenet.load().then(model => {model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; } ) });
 	    
     } catch (error) {
       outp.innerHTML = error; 
