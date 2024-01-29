@@ -124,7 +124,6 @@ function create_dynamic_canvasElement() {
 		        // Draw image on canvas
 		        // canvasElement.style.display = "block";
 		        ctx.drawImage(image, 0,0);
-
 			pred_vec = await run_group_together(image, model, pred_vec);
 			
         };  // end of image.onload
@@ -137,6 +136,8 @@ function create_dynamic_canvasElement() {
    });  // mobilenet.load()
 
 
+    outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
+	  
     // Save array to csv and download csv file
     downloadCSV(pred_vec);
 	  
@@ -148,38 +149,37 @@ function create_dynamic_canvasElement() {
   function downloadCSV(pred_vec) {
 	  
     const filename = 'data.csv';
-
     const link = document.createElement("a");
 
-    outp.innerHTML += 'link: ' + link + "<br/>";
+    outp.innerHTML += 'link: ' + link.download + "<br/>";
 	  
-    if (link.download !== undefined) {
+    // if (link.download !== undefined) {
 
 	// ---------------------
 	// Puts array into csv format
 	// const blob = new Blob([pred_vec], { type: 'text/csv;charset=utf-8;' });
 
 	// Create a url for the data object
-     //  const url = URL.createObjectURL(blob);
+	//  const url = URL.createObjectURL(blob);
 	// ---------------------
-	    // OR
-// ---------------------
+	// OR
+	// ---------------------
 	// Puts array into csv format
 	let csvContent = "data:text/csv; charset=utf-8";
-	  pred_vec.forEach(function(row_array) {
+	pred_vec.forEach(function(row_array) {
 		csvContent += row_array.join(",") + "\r\n";
-	  });
+	});
 	// Create a url for the data object
-	    var url = encodeURI(csvContent);
-// ---------------------
+	var url = encodeURI(csvContent);
+	// ---------------------
 	
-      link.setAttribute("href", url);
-      link.setAttribute("download", filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+	link.setAttribute("href", url);
+	link.setAttribute("download", filename);
+	link.style.visibility = 'hidden';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+    //}
 	  
 }
 
@@ -187,31 +187,38 @@ function create_dynamic_canvasElement() {
 
 
   async function run_group_together(image, model, pred_vec) {
-
+	  
+    // https://github.com/tensorflow/tfjs-models/tree/master/mobilenet
+	  
     try {
-	// Convert the image element to a tensor using fromPixels
-	var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-
-	// this printed correctly
-	outp.innerHTML += tf.max(tensor_image) + "<br/>";
-				
-	// const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
-	const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
-	outp.innerHTML += eTensor.shape + "<br/>";
-
-	// Test if eTensor 
-	// await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
-	// OR
+	// ---------------------
+	// For using an image input to mobilenet
+	// ---------------------
 	// await model.classify(image).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 	// OR
-	// OR
-	// Just list the first prediction choice
-	await model.classify(eTensor).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]); });
-	// OR
-	// Just list the first prediction choice
-	// await mobilenet.load().then(model => {model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; } ) });
-
+	// Just list the first prediction choice, use a tensor as input
+	await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]); });
 	    
+	// ---------------------
+	// For using a tensor input to mobilenet
+	// ---------------------
+	// Convert the image element to a tensor using fromPixels
+	// var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+
+	// View the largest pixel value
+	// outp.innerHTML += tf.max(tensor_image) + "<br/>";
+	
+	// const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+	// outp.innerHTML += eTensor.shape + "<br/>";
+	// ---------------------
+	    
+	// await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+	// OR
+	// Just list the first prediction choice, use a tensor as input
+	// await model.classify(eTensor).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]); });
+	// OR
+	// Print the first prediction choice, use an image as input
+	// await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; } ) });
 	    
     } catch (error) {
       outp.innerHTML = error; 
