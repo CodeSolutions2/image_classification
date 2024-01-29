@@ -7,10 +7,10 @@
   <!-- https://js.tensorflow.org/api/1.0.0/ -->
   <h1 style='text-align: center; margin-bottom: -35px;'>CodeSolution2 - Image labeling webapp: Read files from URL and output label</h1>
   <br><br>
-        <button id="run_mobilenet_way1" onclick="run_mobilenet_way1()" style="display:block">run_mobilenet_way1</button>
-	<br>
+  <button id="main" onclick="main()" style="display:block">main</button>
+  <br>
 	
-<div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
+  <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
   
 <style>canvas {border: 1px solid black; position: relative; z-index: 1;}
 div {position: relative; z-index: 2;}
@@ -26,7 +26,6 @@ div {position: relative; z-index: 2;}
   const outp = document.getElementById('output');
 
   var url_vec = [];
-
 
   // -------------------------------------------------
 	
@@ -93,7 +92,7 @@ function create_dynamic_canvasElement() {
 	
   // -------------------------------------------------
 
-  async function run_mobilenet_way1() {
+  async function run_mobilenet() {
 
     var url_vec = await get_urls_from_repo();
 
@@ -105,7 +104,6 @@ function create_dynamic_canvasElement() {
 
     var pred_vec = [];
 	    
-    async () => {
 	    
 	    url_vec.forEach(function(url, index) {
         
@@ -130,6 +128,7 @@ function create_dynamic_canvasElement() {
 		        ctx.drawImage(image, 0,0);
 			
 			// pred_vec = await run_group_together(image, model, pred_vec);
+			// OR
 			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]);  });
 
 			// data accumulates inside model.classify and inside image.onload
@@ -140,19 +139,26 @@ function create_dynamic_canvasElement() {
 	image.src = url;
 
 	});  // end of image.forEach
-
-	// data accumulates inside model.classify and inside image.onload
-	outp.innerHTML += 'pred_vec outside of image.forEach: ' + pred_vec + "<br/>";
-	    
-	// Save array to csv and download csv file
-	await downloadCSV(pred_vec);
-		}
 	    
    });  // mobilenet.load()
 
-	  
-	  
 }  // end of run_mobilenet
+
+	
+  // -------------------------------------------------
+
+async function main() {
+
+   await run_mobilenet();
+
+	
+   // data accumulates inside model.classify and inside image.onload
+   outp.innerHTML += 'pred_vec outside of image.forEach: ' + pred_vec + "<br/>";
+	    
+   // Save array to csv and download csv file
+   await downloadCSV(pred_vec);
+	
+}
 	
   // -------------------------------------------------
 
