@@ -7,7 +7,7 @@
   <!-- https://js.tensorflow.org/api/1.0.0/ -->
   <h1 style='text-align: center; margin-bottom: -35px;'>CodeSolution2 - Image labeling webapp: Read files from URL and output label</h1>
   <br><br>
-  <button id="main" onclick="main()" style="display:block">main</button>
+  <button id="run_mobilenet" onclick="run_mobilenet()" style="display:block">run_mobilenet</button>
   <br>
 	
   <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
@@ -26,7 +26,6 @@ div {position: relative; z-index: 2;}
   const outp = document.getElementById('output');
 
   var url_vec = [];  // This is a global variable, and I start referencing it in get_urls_from_repo
-  var pred_vec = []; // This is a global variable, and I start referenceing it in run_mobilenet
 
   // -------------------------------------------------
 	
@@ -93,6 +92,7 @@ function create_dynamic_canvasElement() {
 	
   // -------------------------------------------------
 
+	
   async function run_mobilenet() {
 
     var url_vec = await get_urls_from_repo();
@@ -100,6 +100,8 @@ function create_dynamic_canvasElement() {
     // PRINT
     outp.innerHTML += 'url_vec: ' + url_vec + "<br/>";
 
+    var pred_vec = []; // This is a variable for this function only to accumulate the image labels. The model output is trapped inside image.onload, maybe due to the async () function.
+	  
     // Load the model
     await mobilenet.load().then(model => {
 
@@ -126,13 +128,21 @@ function create_dynamic_canvasElement() {
 			
 			// pred_vec = await run_group_together(image, model, pred_vec);
 			// OR
-			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]);  
-					// data accumulates correctly in pred_vec, here:
-					// outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
+			await model.classify(image).then(predictions => { 
+				// outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>";
+				pred_vec.push([predictions[0].className, predictions[0].probability]);
+				// data accumulates correctly in pred_vec, here:
+				// outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
 									});
 
-			// data accumulates correctly in pred_vec, here:
-			// outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
+		    	// Save accumulated array as csv file at the last url entry
+		    	if (index == url_vec.length) {
+				// data accumulates correctly in pred_vec, here:
+				outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
+				
+				// Save array to csv and download csv file
+				await downloadCSV(pred_vec);
+			}
 	  
 	    };  // end of image.onload
 
@@ -155,20 +165,6 @@ function create_dynamic_canvasElement() {
 
 }  // end of run_mobilenet
 
-	
-  // -------------------------------------------------
-
-async function main() {
-
-   await run_mobilenet();
-
-   // The global variable is updated after falling out of image.onload in run_mobilenet()
-   outp.innerHTML += 'pred_vec outside of image.forEach: ' + pred_vec + "<br/>";
-	    
-   // Save array to csv and download csv file
-   await downloadCSV(pred_vec);
-	
-}
 	
   // -------------------------------------------------
 
