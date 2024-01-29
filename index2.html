@@ -26,7 +26,7 @@ div {position: relative; z-index: 2;}
   const outp = document.getElementById('output');
 
   var url_vec = [];  // This is a global variable, and I start referencing it in get_urls_from_repo
-  // var pred_vec = []; // This is a global variable, and I start referenceing it in run_mobilenet
+  var pred_vec = []; // This is a global variable, and I start referenceing it in run_mobilenet
 
   // -------------------------------------------------
 	
@@ -137,13 +137,14 @@ function create_dynamic_canvasElement() {
 	    };  // end of image.onload
 
 	    // data accumulates correctly in pred_vec, here:
-	    outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
+	    outp.innerHTML += 'pred_vec after image.onload: ' + pred_vec + "<br/>";
 		
 	    image.src = url;
 
 	});  // end of image.forEach
 
 	// pred_vec is not defined here
+	outp.innerHTML += 'pred_vec after image.forEach: ' + pred_vec + "<br/>";
 	    
    });  // mobilenet.load()
 
