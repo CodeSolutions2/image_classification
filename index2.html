@@ -117,7 +117,7 @@ async function load_model(){
 	const image = new Image();
 
         // Add 'crossorigin' attribute to bypass insecure error
-        await image.crossOrigin = "anonymous";
+        image.crossOrigin = "anonymous";
 	    
 	// Way 0
 	//image.src = await Promise.resolve(url);
@@ -125,11 +125,11 @@ async function load_model(){
         // PRINT
         // outp.innerHTML += 'image.complete: ' + image.complete + "<br/>";
 
-        image.onload = () => {
+        image.onload = async () => {
 	
 		        // Draw image on canvas
 		        // canvasElement.style.display = "block";
-		        await ctx.drawImage(image, 0,0);
+		        ctx.drawImage(image, 0,0);
 
 			// outp.innerHTML += "index: " + index + "<br/>";
 			// console.log(index);
