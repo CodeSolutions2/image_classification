@@ -83,10 +83,9 @@ async function load_model(){
 	// Did not work
  	// model = await mobilenet.load().then(model => { return model });
 	// OR
-	const model = await mobilenet.load();
-	return model;
+	return await mobilenet.load();
 }
-load_model();
+const model = load_model();
 	
   // -------------------------------------------------
 
