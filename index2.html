@@ -126,11 +126,6 @@ function create_dynamic_canvasElement() {
 		        // canvasElement.style.display = "block";
 		        ctx.drawImage(image, 0,0);
 
-			// outp.innerHTML += "index: " + index + "<br/>";
-			// console.log(index);
-
-			// ---------------------------------------------------
-
 			pred_vec = await run_group_together(image, model, pred_vec);
 			
         };  // end of image.onload
@@ -143,18 +138,49 @@ function create_dynamic_canvasElement() {
    });  // mobilenet.load()
 
 
-	  // Save array to csv
-	  let csvContent = "data:text/csv; charset=utf-8";
-	  pred_vec.forEach(function(row_array) {
-		csvContent += row_array.join(",") + "\r\n";
-	  });
+	  // Save array to csv and download csv file
+	  downloadCSV(pred_vec);
 	  
 	  
 }  // end of run_mobilenet
 	
+  // -------------------------------------------------
 
+  function downloadCSV(pred_vec) {
+  const filename = 'data.csv';
+  
 
+const link = document.createElement("a");
+if (link.download !== undefined) {
+
+	// ---------------------
+	// Puts array into csv format
+	// const blob = new Blob([pred_vec], { type: 'text/csv;charset=utf-8;' });
+
+	// Create a url for the data object
+     //  const url = URL.createObjectURL(blob);
+	// ---------------------
+	    // OR
+// ---------------------
+	// Puts array into csv format
+	let csvContent = "data:text/csv; charset=utf-8";
+	  pred_vec.forEach(function(row_array) {
+		csvContent += row_array.join(",") + "\r\n";
+	  });
+	// Create a url for the data object
+	    var url = encodeURI(csvContent);
+// ---------------------
 	
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+	  
+}
+
   // -------------------------------------------------
 
 
