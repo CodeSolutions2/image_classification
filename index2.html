@@ -128,23 +128,26 @@ function create_dynamic_canvasElement() {
 		        ctx.drawImage(image, 0,0);
 			
 			// pred_vec = await run_group_together(image, model, pred_vec);
-			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]); });
+			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]); 
 
+			outp.innerHTML += 'pred_vec inside model.classify: ' + pred_vec + "<br/>";
+									});
+
+			outp.innerHTML += 'pred_vec under model.classify: ' + pred_vec + "<br/>";
+	  
 			
+		
         };  // end of image.onload
 
-	// Way 1:
 	image.src = url;
 
 	});  // end of image.forEach
 
+	// Save array to csv and download csv file
+	downloadCSV(pred_vec);
+	    
    });  // mobilenet.load()
 
-
-    outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
-	  
-    // Save array to csv and download csv file
-    downloadCSV(pred_vec);
 	  
 	  
 }  // end of run_mobilenet
