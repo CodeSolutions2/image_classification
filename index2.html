@@ -80,12 +80,17 @@ function create_dynamic_canvasElement() {
 
 
   // -------------------------------------------------
+	
 
-//async function load_model(){
-	model = await mobilenet.load().then(model => { return model });
+async function load_model(){
+
+	// Did not work
+ 	// model = await mobilenet.load().then(model => { return model });
+	// OR
+	const model = await mobilenet.load();
 	return model;
 }
-
+load_model();
 	
   // -------------------------------------------------
 
@@ -99,7 +104,7 @@ function create_dynamic_canvasElement() {
     outp.innerHTML += 'url_vec: ' + url_vec + "<br/>";
 	  
     // Load the model
-    await mobilenet.load().then(model => {
+    //await mobilenet.load().then(model => {
 
 	    // Will creating the model variable with the callback, create a global variable model that I can access in a separate function??
 	    
@@ -164,7 +169,7 @@ function create_dynamic_canvasElement() {
 
 	});  // end of image.forEach
 
-   });  // mobilenet.load()
+   //});  // mobilenet.load()
 
 	  
 }  // end of run_mobilenet_way1
@@ -186,9 +191,12 @@ function create_dynamic_canvasElement() {
 	const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
 	outp.innerHTML += eTensor.shape + "<br/>";
 
-	await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+	// await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 	// OR
 	// await model.classify(image).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+	// OR
+	// Just list the first prediction choice
+	await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; } });
 	    
     } catch (error) {
       outp.innerHTML = error; 
@@ -196,58 +204,6 @@ function create_dynamic_canvasElement() {
     
   } 
 
-  // -------------------------------------------------
-
-  async function run_mobilenet_way0() {
-
-    try {
-
-      for (var i=0; i < url_vec.length; i++){
-		    
-	      // ---------------------------
-        // Create a canvas for first image
-	// create_dynamic_canvasElement();
-	// ---------------------------
-	// Create a canvas element
-	var canvasElement = document.createElement('canvas');
-
-	// Set the width and height of the canvas
-	canvasElement.width = 224;
-	canvasElement.height = canvasElement.width;
-	      
-	// Get the 2D rendering context of the canvas
-	const ctx = canvasElement.getContext("2d");
-	      
-	// Add the canvas to the document body or any other desired element
-	document.body.appendChild(canvasElement);
-	// ---------------------------
-			    
-	      const image = new Image();
-	
-	      // await image.src = url_vec[i];  // incorrect
-	      image.src = await Promise.resolve(url_vec[i]);
-	
-	      image.onload = async () => {
-		      
-	        // Draw image on canvas
-	        //document.getElementById("canvasId").style.display = "block";
-	        ctx.drawImage(image, 0,0);
-		      
-	        // Convert the image element to a tensor using fromPixels
-	        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-		      
-	        const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
-		      
-	        // Give image to model
-	        await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
-	      };
-      }
-    
-    } catch (error) {
-      outp.innerHTML = error; 
-    }
-    
-  }  // end of run_mobilenet_way0
   
   // -------------------------------------------------
 	
