@@ -28,6 +28,7 @@
   const outp = document.getElementById('output');
 
   var url_vec = [];
+  const model = [];
 
   // -------------------------------------------------
 
@@ -81,12 +82,15 @@ async function get_urls_from_repo() {
 
   // -------------------------------------------------
 
-async function load_model(){
-	const model = await mobilenet.load().then(model => { return model});
 
+
+  // -------------------------------------------------
+
+async function load_model(){
+	model = await mobilenet.load().then(model => { return model });
 	return model;
 }
-const model = load_model();
+
 	
   // -------------------------------------------------
 
@@ -100,62 +104,63 @@ const model = load_model();
     outp.innerHTML += 'url_vec: ' + url_vec + "<br/>";
 	  
     // Load the model
-  //  await mobilenet.load().then(model => {
+    //  await mobilenet.load().then(model => {
+	model = await load_model();
 
     url_vec.forEach(function(url, index) {
-		// ---------------------------
+        
+        // ---------------------------
         // Create a canvas for first image
-	// create_dynamic_canvasElement();
-	// ---------------------------
-	// Create a canvas element
-	var canvasElement = document.createElement('canvas');
-
-	// Set the width and height of the canvas
-	canvasElement.width = 224;
-	canvasElement.height = canvasElement.width;
-	      
-	// Get the 2D rendering context of the canvas
-	const ctx = canvasElement.getContext("2d");
-	      
-	// Add the canvas to the document body or any other desired element
-	document.body.appendChild(canvasElement);
+	await create_dynamic_canvasElement();
+	
 	// ---------------------------
 
-        const image = new Image();
+        
+	const image = await new Image();
 
         // Add 'crossorigin' attribute to bypass insecure error
-        image.crossOrigin = "anonymous";
+        await image.crossOrigin = "anonymous";
 	    
 	// Way 0
 	//image.src = await Promise.resolve(url);
 
         // PRINT
-        outp.innerHTML += 'image.complete: ' + image.complete + "<br/>";
+        // outp.innerHTML += 'image.complete: ' + image.complete + "<br/>";
 
         image.onload = () => {
 	
 		        // Draw image on canvas
-		        canvasElement.style.display = "block";
-		        ctx.drawImage(image, 0,0);
+		        // canvasElement.style.display = "block";
+		        await ctx.drawImage(image, 0,0);
 
-			outp.innerHTML += "index: " + index + "<br/>";
-			console.log(index);
+			// outp.innerHTML += "index: " + index + "<br/>";
+			// console.log(index);
+
+			// ---------------------------------------------------
+
+			await run_group_together();
+
 		
+			// OR
+		
+			// ---------------------------------------------------
 		        // Convert the image element to a tensor using fromPixels
-		        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+			//  var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
 
 		        // this printed correctly
-			outp.innerHTML += tf.max(tensor_image) + "<br/>";
+			// outp.innerHTML += tf.max(tensor_image) + "<br/>";
 				
-		        const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
-			outp.innerHTML += eTensor.shape + "<br/>";
+		        // const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
+			// outp.innerHTML += eTensor.shape + "<br/>";
 		
 				
-			//await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+		//await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+                 
+                 // Load, then classify - maybe it takes too much time
+		 // mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
 
-		// OR
-
-		 mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+		 // Load, then classify - maybe it takes too much time
+		 // await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
 			
         };  // end of image.onload
 
@@ -171,7 +176,29 @@ const model = load_model();
 	
 
   // -------------------------------------------------
-	
+
+
+  async function run_group_together() {
+
+    try {
+	// Convert the image element to a tensor using fromPixels
+	var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+
+	// this printed correctly
+	outp.innerHTML += tf.max(tensor_image) + "<br/>";
+				
+	const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
+	outp.innerHTML += eTensor.shape + "<br/>";
+				
+	await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+    } catch (error) {
+      outp.innerHTML = error; 
+    }
+    
+  } 
+
+  // -------------------------------------------------
+
   async function run_mobilenet_way0() {
 
     try {
