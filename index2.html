@@ -26,7 +26,7 @@ div {position: relative; z-index: 2;}
   const outp = document.getElementById('output');
 
   var url_vec = [];
-  var pred_vec = [];
+
 
   // -------------------------------------------------
 	
@@ -103,6 +103,8 @@ function create_dynamic_canvasElement() {
     // Load the model
     await mobilenet.load().then(model => {
 
+    var pred_vec = [];
+	    
     url_vec.forEach(function(url, index) {
         
         // ---------------------------
