@@ -140,7 +140,7 @@ async function load_model(){
 
 			// ---------------------------------------------------
 
-			await run_group_together();
+			await run_group_together(image, model);
 
 		
 			// OR
@@ -180,7 +180,7 @@ async function load_model(){
   // -------------------------------------------------
 
 
-  async function run_group_together() {
+  async function run_group_together(image, model) {
 
     try {
 	// Convert the image element to a tensor using fromPixels
