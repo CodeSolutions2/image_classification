@@ -136,7 +136,7 @@ function create_dynamic_canvasElement() {
 	  
 	    };  // end of image.onload
 
-	    // data accumulates correctly in pred_vec, here:
+	    // pred_vec is not defined here
 	    // outp.innerHTML += 'pred_vec after image.onload: ' + pred_vec + "<br/>";
 		
 	    image.src = url;
@@ -144,14 +144,13 @@ function create_dynamic_canvasElement() {
 	});  // end of image.forEach
 
 	// pred_vec is not defined here
-	outp.innerHTML += 'pred_vec after image.forEach: ' + pred_vec + "<br/>";
+	// outp.innerHTML += 'pred_vec after image.forEach: ' + pred_vec + "<br/>";
 	    
    });  // mobilenet.load()
 
 
-   // the javascript code logic is not consistent, really I should return pred_vec from model.classify, image.onload, and mobilenet.load
-
    // If the logic is consistent, I just return the global variable pred_vec from here to update it
+   // But, pred_vec is not defined here, so I can not return it. Instead, the global variable pred_vec is just updated after falling out of image.onload.
    // return pred_vec;
 
 }  // end of run_mobilenet
@@ -163,7 +162,7 @@ async function main() {
 
    await run_mobilenet();
 
-   // data accumulates inside model.classify and inside image.onload
+   // The global variable is updated after falling out of image.onload in run_mobilenet()
    outp.innerHTML += 'pred_vec outside of image.forEach: ' + pred_vec + "<br/>";
 	    
    // Save array to csv and download csv file
