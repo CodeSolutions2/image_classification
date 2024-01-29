@@ -8,7 +8,6 @@
   <h1 style='text-align: center; margin-bottom: -35px;'>CodeSolution2 - Image labeling webapp: Read files from URL and output label</h1>
   <br><br>
   <button id="run_label_images" onclick="run_label_images()" style="display:block">run_label_images</button>
-  <br>
 	
   <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
   
@@ -140,7 +139,7 @@ function create_dynamic_canvasElement() {
 
 				// Write model prediction on image
 				// https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
-				ctx.font = "24px serif";
+				ctx.font = "12px serif";
 				ctx.fillText("Mobilenet= "+predictions[0].className, 10, 10); // fillText(text, x, y [, maxWidth])
 
 				// Store model predictions in array
@@ -155,12 +154,15 @@ function create_dynamic_canvasElement() {
 		    	// Call Model 1: edge_detection_model
 		    	let datavec = await run_group_together(image, edgeDetection_model);
 
+			outp.innerHTML += 'index: ' + index + "<br/>";
+			outp.innerHTML += 'datavec[0][0]: ' + datavec[0][0] + "<br/>";
+			outp.innerHTML += 'datavec[0][1]: ' + datavec[0][1] + "<br/>";
+
 		    	// Write model prediction on image
-		    	ctx.font = "24px serif";
 		    	ctx.fillText("Edetection= "+datavec[0], 10, 40);
 		    
-		    	pred_vec[index+2][3] = datavec[0];
-		    	pred_vec[index+2][4] = datavec[1];
+		    	pred_vec[index+2][3] = datavec[0][0];  // label name
+		    	pred_vec[index+2][4] = datavec[0][1];  // probability
 		    	
 		    	// Save accumulated array as csv file at the last url entry
 		    	if (index == url_vec.length-1) {
