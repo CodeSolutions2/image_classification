@@ -31,25 +31,6 @@
   const model = [];
 
   // -------------------------------------------------
-
-async function create_dynamic_canvasElement() {
-	
-	// Create a canvas element
-	var canvasElement = document.createElement('canvas');
-
-	// Set the width and height of the canvas
-	canvasElement.width = 224;
-	canvasElement.height = canvasElement.width;
-	      
-	// Get the 2D rendering context of the canvas
-	const ctx = canvasElement.getContext("2d");
-	      
-	// Add the canvas to the document body or any other desired element
-	document.body.appendChild(canvasElement);
-}
-
-
-  // -------------------------------------------------
 	
 async function get_urls_from_repo() {
 	
@@ -70,13 +51,30 @@ async function get_urls_from_repo() {
     });
   }).catch(error => { outp.innerHTML += error; });
 
-
-	  
   } catch (error) {
     outp.innerHTML = error;
   }
 
 	return url_vec;
+}
+
+
+  // -------------------------------------------------
+
+function create_dynamic_canvasElement() {
+	
+	// Create a canvas element
+	var canvasElement = document.createElement('canvas');
+
+	// Set the width and height of the canvas
+	canvasElement.width = 224;
+	canvasElement.height = canvasElement.width;
+	      
+	// Get the 2D rendering context of the canvas
+	const ctx = canvasElement.getContext("2d");
+	      
+	// Add the canvas to the document body or any other desired element
+	document.body.appendChild(canvasElement);
 }
 
 
@@ -111,7 +109,7 @@ async function load_model(){
         
         // ---------------------------
         // Create a canvas for first image
-	await create_dynamic_canvasElement();
+	create_dynamic_canvasElement();
 	
 	// ---------------------------
 
