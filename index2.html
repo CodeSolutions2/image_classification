@@ -132,7 +132,7 @@ const model = load_model();
         // PRINT
         outp.innerHTML += 'image.complete: ' + image.complete + "<br/>";
 
-        image.onload = async () => {
+        image.onload = () => {
 	
 		        // Draw image on canvas
 		        canvasElement.style.display = "block";
@@ -155,7 +155,7 @@ const model = load_model();
 
 		// OR
 
-		await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+		 mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
 			
         };  // end of image.onload
 
