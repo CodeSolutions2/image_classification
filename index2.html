@@ -28,7 +28,6 @@
   const outp = document.getElementById('output');
 
   var url_vec = [];
-  const model = [];
 
   // -------------------------------------------------
 	
@@ -102,8 +101,11 @@ async function load_model(){
     outp.innerHTML += 'url_vec: ' + url_vec + "<br/>";
 	  
     // Load the model
-    //  await mobilenet.load().then(model => {
-	model = await load_model();
+    await mobilenet.load().then(model => {
+
+	    // Will creating the model variable with the callback, create a global variable model that I can access in a separate function??
+	    
+	// model = await load_model();
 
     url_vec.forEach(function(url, index) {
         
@@ -167,7 +169,7 @@ async function load_model(){
 
 	});  // end of image.forEach
 
-   // });  // mobilenet.load()
+   });  // mobilenet.load()
 
 	  
 }  // end of run_mobilenet_way1
