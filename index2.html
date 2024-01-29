@@ -11,7 +11,7 @@
 	
   <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
   
-<style>canvas {border: 1px solid black; position: absolute; z-index: 1; top: 40px; left: 40px;}
+<style>canvas {border: 1px solid black; position: relative; display: inline-block; z-index: 1; top: 150px; left: 40px;}
 div {position: relative; z-index: 2;}
 </style>
 
@@ -139,7 +139,7 @@ function create_dynamic_canvasElement() {
 
 				// Write model prediction on image
 				// https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
-				ctx.font = "bold 12px serif";
+				ctx.font = "bold 14px serif";
 				// context.font = "bold 24px verdana, sans-serif ";
 			
 				// Make a square on canvas
@@ -166,7 +166,7 @@ function create_dynamic_canvasElement() {
 				
 				// Write model prediction on image
 				ctx.fillStyle = "#ffffff";  // Font color = white, 
-				ctx.fillText("Edetection= " + datavec[0][0], 10, 40);
+				ctx.fillText("Edetection= " + datavec[0][0], 10, 35);
 		    
 				pred_vec[index+2][3] = datavec[0][0];  // label name
 				pred_vec[index+2][4] = datavec[0][1];  // probability
