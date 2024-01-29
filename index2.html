@@ -95,8 +95,6 @@ function create_dynamic_canvasElement() {
 
   async function run_mobilenet_way1() {
 
-    // Load the model outside of loop, only classify in the for loop
-
     var url_vec = await get_urls_from_repo();
 
     // PRINT
@@ -112,7 +110,6 @@ function create_dynamic_canvasElement() {
 	var ctx = create_dynamic_canvasElement();
 	
 	// ---------------------------
-
         
 	const image = new Image();
 
@@ -140,8 +137,8 @@ function create_dynamic_canvasElement() {
    });  // mobilenet.load()
 
 
-	  // Save array to csv and download csv file
-	  downloadCSV(pred_vec);
+    // Save array to csv and download csv file
+    downloadCSV(pred_vec);
 	  
 	  
 }  // end of run_mobilenet
@@ -149,11 +146,14 @@ function create_dynamic_canvasElement() {
   // -------------------------------------------------
 
   function downloadCSV(pred_vec) {
-  const filename = 'data.csv';
-  
+	  
+    const filename = 'data.csv';
 
-const link = document.createElement("a");
-if (link.download !== undefined) {
+    const link = document.createElement("a");
+
+    outp.innerHTML += 'link: ' + link + "<br/>";
+	  
+    if (link.download !== undefined) {
 
 	// ---------------------
 	// Puts array into csv format
