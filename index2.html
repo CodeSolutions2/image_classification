@@ -97,7 +97,7 @@ const model = load_model();
     var url_vec = await get_urls_from_repo();
 
     // PRINT
-    outp.innerHTML += 'url_vec: ' + url_vec;
+    outp.innerHTML += 'url_vec: ' + url_vec + "<br/>";
 	  
     // Load the model
   //  await mobilenet.load().then(model => {
@@ -139,7 +139,7 @@ const model = load_model();
 		        ctx.drawImage(image, 0,0);
 
 			outp.innerHTML += "index: " + index + "<br/>";
-			index.print();
+			console.log(index);
 		
 		        // Convert the image element to a tensor using fromPixels
 		        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
