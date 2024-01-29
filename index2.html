@@ -139,8 +139,9 @@ function create_dynamic_canvasElement() {
 				// outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>";
 
 				// Write model prediction on image
+				// https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
 				ctx.font = "24px serif";
-				ctx.fillText(predictions[0].className, 10, 50); // fillText(text, x, y [, maxWidth])
+				ctx.fillText("Mobilenet= "+predictions[0].className, 10, 10); // fillText(text, x, y [, maxWidth])
 
 				// Store model predictions in array
 				let out = url.split("/")
@@ -153,8 +154,13 @@ function create_dynamic_canvasElement() {
 
 		    	// Call Model 1: edge_detection_model
 		    	let datavec = await run_group_together(image, edgeDetection_model);
-		    	pred_vec[index][3] = datavec[0];
-		    	pred_vec[index][4] = datavec[1];
+
+		    	// Write model prediction on image
+		    	ctx.font = "24px serif";
+		    	ctx.fillText("Edetection= "+datavec[0], 10, 40);
+		    
+		    	pred_vec[index+2][3] = datavec[0];
+		    	pred_vec[index+2][4] = datavec[1];
 		    	
 		    	// Save accumulated array as csv file at the last url entry
 		    	if (index == url_vec.length-1) {
@@ -262,22 +268,21 @@ function create_dynamic_canvasElement() {
 	// Using a tensor input to edgeDetection_model
 	// ---------------------
 	// Convert the image element to a tensor using fromPixels
-            var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+	var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
 	    
-	    const k_rgb_values = tf.tensor4d([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]], shape=[3, 3, 3, 1], dtype='float32');
+	const k_rgb_values = tf.tensor4d([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]], shape=[3, 3, 3, 1], dtype='float32');
 		  
-            const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
-	    
-            const image_4D_float = tf.cast(image_4D, 'float32')
-            const image_filter0 = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same') 
+	const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
+	const image_4D_float = tf.cast(image_4D, 'float32')
+	const image_filter0 = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same') 
 
-            // Dispose of the intermediate tensors
-            tensor_image.dispose();
-            k_rgb_values.dispose();
-            image_4D.dispose();
-            image_4D_float.dispose();
+	// Dispose of the intermediate tensors
+	tensor_image.dispose();
+	k_rgb_values.dispose();
+	image_4D.dispose();
+	image_4D_float.dispose();
 		  
-            // Make image values from -1 to 1
+	// Make image values from -1 to 1
             const b = tf.scalar(255);
 	    const image_filter = image_filter0.div(b)
 	    const shape_out = image_filter.shape;   // 1,276,250,1
@@ -305,7 +310,7 @@ function create_dynamic_canvasElement() {
 	    } else {
 		datavec.push(['tomatoe', resultData]);
 	    }
-	    outp.innerHTML += "datavec: " + datavec + "<br/>";;
+	    // outp.innerHTML += "datavec: " + datavec + "<br/>";;
 	    
     } catch (error) {
       outp.innerHTML = error; 
