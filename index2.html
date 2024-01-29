@@ -12,7 +12,7 @@
   <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
 
 	<!-- https://developer.mozilla.org/en-US/docs/Web/CSS/position -->
-<style>canvas {border: 1px solid black; position: absolute; display: inline-block; z-index: 1; top: 150px; left: 40px;}
+<style>canvas {border: 1px solid black; position: absolute; display: inline-block; z-index: 1; top: 150px;}
 div {position: relative; z-index: 2;}
 </style>
 
@@ -69,11 +69,12 @@ function create_dynamic_canvasElement(index) {
 	      
 	// Get the 2D rendering context of the canvas
 	var ctx = canvasElement.getContext("2d");
-
+	
 	if (index == 0) {
-		canvasElement.style.left = 40;
+		canvasElement.style.left = 40+'px';
 	} else {
-		canvasElement.style.left = index*canvasElement.width + 40;
+		let tot = index*canvasElement.width + 40;
+		canvasElement.style.left = tot+'px';
 	}
 	
 	// Add the canvas to the document body or any other desired element
