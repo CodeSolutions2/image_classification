@@ -225,7 +225,7 @@ function create_dynamic_canvasElement() {
   async function run_group_together(image, edgeDetection_model) {
 	  
     // https://github.com/tensorflow/tfjs-models/tree/master/mobilenet
-    const datavec = ['', ''];
+    const datavec = [];
 	  
     try {
 	// ---------------------
@@ -301,10 +301,11 @@ function create_dynamic_canvasElement() {
 	    const resultData = await result.data(); // correct
 	    
 	    if (resultData > 0.5){
-		datavec = ['apple', resultData]
+		datavec.push(['apple', resultData]);
 	    } else {
-		datavec = ['tomatoe', resultData]
+		datavec.push(['tomatoe', resultData]);
 	    }
+	    outp.innerHTML += "datavec: " + datavec + "<br/>";;
 	    
     } catch (error) {
       outp.innerHTML = error; 
