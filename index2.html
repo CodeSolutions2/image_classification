@@ -128,23 +128,22 @@ function create_dynamic_canvasElement() {
 		        ctx.drawImage(image, 0,0);
 			
 			// pred_vec = await run_group_together(image, model, pred_vec);
-			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]); 
+			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]);  });
 
-			outp.innerHTML += 'pred_vec inside model.classify: ' + pred_vec + "<br/>";
-									});
-
-			outp.innerHTML += 'pred_vec under model.classify: ' + pred_vec + "<br/>";
+			// data accumulates inside model.classify and inside image.onload
+			// outp.innerHTML += 'pred_vec under model.classify: ' + pred_vec + "<br/>";
 	  
-			
-		
         };  // end of image.onload
 
 	image.src = url;
 
 	});  // end of image.forEach
 
+	// data accumulates inside model.classify and inside image.onload
+	outp.innerHTML += 'pred_vec outside of image.forEach: ' + pred_vec + "<br/>";
+	    
 	// Save array to csv and download csv file
-	downloadCSV(pred_vec);
+	await downloadCSV(pred_vec);
 	    
    });  // mobilenet.load()
 
@@ -154,7 +153,7 @@ function create_dynamic_canvasElement() {
 	
   // -------------------------------------------------
 
-  function downloadCSV(pred_vec) {
+  async function downloadCSV(pred_vec) {
 	  
     const filename = 'data.csv';
     const link = document.createElement("a");
