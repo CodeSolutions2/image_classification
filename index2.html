@@ -11,7 +11,7 @@
 	
   <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
   
-<style>canvas {border: 1px solid black; position: relative; z-index: 1;}
+<style>canvas {border: 1px solid black; position: relative; z-index: 1; top: 40px; left: 40px;}
 div {position: relative; z-index: 2;}
 </style>
 
@@ -141,7 +141,13 @@ function create_dynamic_canvasElement() {
 				// https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
 				ctx.font = "bold 12px serif";
 				// context.font = "bold 24px verdana, sans-serif ";
-				ctx.fillStyle = "#e9f0ef";  // https://www.google.com/search?client=firefox-b-d&q=%23ff0000
+			
+				// Make a square on canvas
+				ctx.fillStyle = "rgb(0 0 200 / 50%)";  // Background square over image = blue
+    				ctx.fillRect(0, 0, 224, 50);  // fillRect(x, y, width, height)
+
+				// Then, print light color text on square
+				ctx.fillStyle = "#ffffff";  // Font color = white, 
 				ctx.fillText("Mobilenet= "+predictions[0].className, 10, 10); // fillText(text, x, y [, maxWidth])
 
 				// Store model predictions in array
@@ -159,7 +165,7 @@ function create_dynamic_canvasElement() {
 				// outp.innerHTML += 'datavec[0][1]: ' + datavec[0][1] + "<br/>";
 				
 				// Write model prediction on image
-				ctx.fillStyle = "#e9f0ef";
+				ctx.fillStyle = "#ffffff";  // Font color = white, 
 				ctx.fillText("Edetection= " + datavec[0][0], 10, 40);
 		    
 				pred_vec[index+2][3] = datavec[0][0];  // label name
