@@ -78,14 +78,15 @@ function create_dynamic_canvasElement() {
   // -------------------------------------------------
 	
 
-async function load_model(){
+//async function load_model(){
 
 	// Did not work
  	// model = await mobilenet.load().then(model => { return model });
 	// OR
-	return await mobilenet.load();
-}
-const model = load_model();
+	//return await mobilenet.load();
+//}
+//const model = load_model();
+	//TypeError: model.classify is not a function
 	
   // -------------------------------------------------
 
@@ -99,11 +100,7 @@ const model = load_model();
     outp.innerHTML += 'url_vec: ' + url_vec + "<br/>";
 	  
     // Load the model
-    //await mobilenet.load().then(model => {
-
-	    // Will creating the model variable with the callback, create a global variable model that I can access in a separate function??
-	    
-	// model = await load_model();
+    await mobilenet.load().then(model => {
 
     url_vec.forEach(function(url, index) {
         
@@ -164,7 +161,7 @@ const model = load_model();
 
 	});  // end of image.forEach
 
-   //});  // mobilenet.load()
+   });  // mobilenet.load()
 
 	  
 }  // end of run_mobilenet_way1
