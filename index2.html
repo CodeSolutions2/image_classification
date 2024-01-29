@@ -139,7 +139,7 @@ function create_dynamic_canvasElement() {
 				// outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>";
 
 				// Write model prediction on image
-				ctx.font = "48px serif";
+				ctx.font = "24px serif";
 				ctx.fillText(predictions[0].className, 10, 50); // fillText(text, x, y [, maxWidth])
 
 				// Store model predictions in array
@@ -159,7 +159,7 @@ function create_dynamic_canvasElement() {
 		    	// Save accumulated array as csv file at the last url entry
 		    	if (index == url_vec.length-1) {
 				// data accumulates correctly in pred_vec, here:
-				outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
+				// outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
 				
 				// Save array to csv and download csv file
 				await downloadCSV(pred_vec);
