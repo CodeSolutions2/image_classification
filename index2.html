@@ -24,6 +24,7 @@
   const outp = document.getElementById('output');
 
   var url_vec = [];
+  var pred_vec = [];
 
   // -------------------------------------------------
 	
@@ -130,29 +131,7 @@ function create_dynamic_canvasElement() {
 
 			// ---------------------------------------------------
 
-			await run_group_together(image, model);
-
-		
-			// OR
-		
-			// ---------------------------------------------------
-		        // Convert the image element to a tensor using fromPixels
-			//  var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-
-		        // this printed correctly
-			// outp.innerHTML += tf.max(tensor_image) + "<br/>";
-				
-		        // const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
-			// outp.innerHTML += eTensor.shape + "<br/>";
-		
-				
-		//await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
-                 
-                 // Load, then classify - maybe it takes too much time
-		 // mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
-
-		 // Load, then classify - maybe it takes too much time
-		 // await mobilenet.load().then(model => {model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); });
+			pred_vec = await run_group_together(image, model, pred_vec);
 			
         };  // end of image.onload
 
@@ -163,14 +142,23 @@ function create_dynamic_canvasElement() {
 
    });  // mobilenet.load()
 
+
+	  // Save array to csv
+	  let csvContent = "data:text/csv; charset=utf-8";
+	  pred_vec.forEach(function(row_array) {
+		csvContent += row_array.join(",") + "\r\n";
+	  });
 	  
-}  // end of run_mobilenet_way1
+	  
+}  // end of run_mobilenet
 	
 
+
+	
   // -------------------------------------------------
 
 
-  async function run_group_together(image, model) {
+  async function run_group_together(image, model, pred_vec) {
 
     try {
 	// Convert the image element to a tensor using fromPixels
@@ -190,15 +178,18 @@ function create_dynamic_canvasElement() {
 	// OR
 	// OR
 	// Just list the first prediction choice
-	await model.classify(eTensor).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; });
+	await model.classify(eTensor).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]); });
 	// OR
 	// Just list the first prediction choice
 	// await mobilenet.load().then(model => {model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; } ) });
+
+	    
 	    
     } catch (error) {
       outp.innerHTML = error; 
     }
-    
+
+	  return pred_vec;
   } 
 
   
