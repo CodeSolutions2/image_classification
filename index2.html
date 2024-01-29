@@ -26,7 +26,7 @@ div {position: relative; z-index: 2;}
   const outp = document.getElementById('output');
 
   var url_vec = [];  // This is a global variable, and I start referencing it in get_urls_from_repo
-  var pred_vec = []; // This is a global variable, and I start referenceing it in run_mobilenet
+  // var pred_vec = []; // This is a global variable, and I start referenceing it in run_mobilenet
 
   // -------------------------------------------------
 	
@@ -126,16 +126,24 @@ function create_dynamic_canvasElement() {
 			
 			// pred_vec = await run_group_together(image, model, pred_vec);
 			// OR
-			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]);  });
+			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]);  
+					// data accumulates correctly in pred_vec, here:
+					// outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
+									});
 
-			// data accumulates inside model.classify and inside image.onload
-			// outp.innerHTML += 'pred_vec under model.classify: ' + pred_vec + "<br/>";
+			// data accumulates correctly in pred_vec, here:
+			// outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
 	  
 	    };  // end of image.onload
 
+	    // data accumulates correctly in pred_vec, here:
+	    outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
+		
 	    image.src = url;
 
 	});  // end of image.forEach
+
+	// pred_vec is not defined here
 	    
    });  // mobilenet.load()
 
@@ -143,7 +151,7 @@ function create_dynamic_canvasElement() {
    // the javascript code logic is not consistent, really I should return pred_vec from model.classify, image.onload, and mobilenet.load
 
    // If the logic is consistent, I just return the global variable pred_vec from here to update it
-   return pred_vec;
+   // return pred_vec;
 
 }  // end of run_mobilenet
 
@@ -152,7 +160,7 @@ function create_dynamic_canvasElement() {
 
 async function main() {
 
-   var pred_vec = await run_mobilenet();
+   await run_mobilenet();
 
    // data accumulates inside model.classify and inside image.onload
    outp.innerHTML += 'pred_vec outside of image.forEach: ' + pred_vec + "<br/>";
