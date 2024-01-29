@@ -124,7 +124,10 @@ function create_dynamic_canvasElement() {
 		        // Draw image on canvas
 		        // canvasElement.style.display = "block";
 		        ctx.drawImage(image, 0,0);
-			pred_vec = await run_group_together(image, model, pred_vec);
+			
+			// pred_vec = await run_group_together(image, model, pred_vec);
+			await model.classify(image).then(predictions => { outp.innerHTML += predictions[0].className + " : " + predictions[0].probability + "<br/>"; pred_vec.push([predictions[0].className, predictions[0].probability]); });
+
 			
         };  // end of image.onload
 
