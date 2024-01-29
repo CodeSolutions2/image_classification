@@ -130,21 +130,26 @@ const model = load_model();
 	//image.src = await Promise.resolve(url);
 
         // PRINT
-        outp.innerHTML += 'image.complete: ' + image.complete;
+        outp.innerHTML += 'image.complete: ' + image.complete + "<br/>";
 
         image.onload = async () => {
 	
 		        // Draw image on canvas
 		        canvasElement.style.display = "block";
 		        ctx.drawImage(image, 0,0);
-			      
+
+			outp.innerHTML += "index: " + index + "<br/>";
+			index.print();
+		
 		        // Convert the image element to a tensor using fromPixels
 		        var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
 
-		        // PRINT
-			outp.innerHTML += tf.max(tensor_image);
+		        // this printed correctly
+			outp.innerHTML += tf.max(tensor_image) + "<br/>";
 				
 		        const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
+			outp.innerHTML += eTensor.shape + "<br/>";
+		
 				
 			//await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
 
