@@ -70,10 +70,12 @@ function create_dynamic_canvasElement() {
 	canvasElement.height = canvasElement.width;
 	      
 	// Get the 2D rendering context of the canvas
-	const ctx = canvasElement.getContext("2d");
+	var ctx = canvasElement.getContext("2d");
 	      
 	// Add the canvas to the document body or any other desired element
 	document.body.appendChild(canvasElement);
+
+	return ctx;
 }
 
 
@@ -111,7 +113,7 @@ async function load_model(){
         
         // ---------------------------
         // Create a canvas for first image
-	create_dynamic_canvasElement();
+	var ctx = create_dynamic_canvasElement();
 	
 	// ---------------------------
 
