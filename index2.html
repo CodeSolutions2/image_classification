@@ -32,7 +32,7 @@
 
   // -------------------------------------------------
 
-function create_dynamic_canvasElement() {
+async function create_dynamic_canvasElement() {
 	
 	// Create a canvas element
 	var canvasElement = document.createElement('canvas');
@@ -189,8 +189,11 @@ async function load_model(){
 				
 	const eTensor = tensor_image.expandDims(0).dataSync(); // This is size 1,224,224,3
 	outp.innerHTML += eTensor.shape + "<br/>";
-				
-	await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+
+	// await model.classify(eTensor).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+	// OR
+	await model.classify(image).then(predictions => {for(var i = 0; i<predictions.length; i++){outp.innerHTML += "<br/>" + predictions[i].className + " : " + predictions[i].probability;} }); 
+	    
     } catch (error) {
       outp.innerHTML = error; 
     }
