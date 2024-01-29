@@ -25,7 +25,8 @@ div {position: relative; z-index: 2;}
 	
   const outp = document.getElementById('output');
 
-  var url_vec = [];
+  var url_vec = [];  // This is a global variable, and I start referencing it in get_urls_from_repo
+  var pred_vec = []; // This is a global variable, and I start referenceing it in run_mobilenet
 
   // -------------------------------------------------
 	
@@ -98,30 +99,26 @@ function create_dynamic_canvasElement() {
 
     // PRINT
     outp.innerHTML += 'url_vec: ' + url_vec + "<br/>";
-	  
+
     // Load the model
     await mobilenet.load().then(model => {
 
-    var pred_vec = [];
-	    
-	    
-	    url_vec.forEach(function(url, index) {
+	url_vec.forEach(function(url, index) {
         
-        // ---------------------------
-        // Create a canvas for first image
-	var ctx = create_dynamic_canvasElement();
-	
-	// ---------------------------
+	    // ---------------------------
+	    // Create a canvas for first image
+	    var ctx = create_dynamic_canvasElement();
+	    // ---------------------------
         
-	const image = new Image();
+	    const image = new Image();
 
-        // Add 'crossorigin' attribute to bypass insecure error
-        image.crossOrigin = "anonymous";
+	    // Add 'crossorigin' attribute to bypass insecure error
+	    image.crossOrigin = "anonymous";
 
-        // PRINT
-        // outp.innerHTML += 'image.complete: ' + image.complete + "<br/>";
+	    // PRINT
+	    // outp.innerHTML += 'image.complete: ' + image.complete + "<br/>";
 
-        image.onload = async () => {
+	    image.onload = async () => {
 	
 		        // Draw image on canvas
 		        // canvasElement.style.display = "block";
@@ -134,13 +131,19 @@ function create_dynamic_canvasElement() {
 			// data accumulates inside model.classify and inside image.onload
 			// outp.innerHTML += 'pred_vec under model.classify: ' + pred_vec + "<br/>";
 	  
-        };  // end of image.onload
+	    };  // end of image.onload
 
-	image.src = url;
+	    image.src = url;
 
 	});  // end of image.forEach
 	    
    });  // mobilenet.load()
+
+
+   // the javascript code logic is not consistent, really I should return pred_vec from model.classify, image.onload, and mobilenet.load
+
+   // If the logic is consistent, I just return the global variable pred_vec from here to update it
+   return pred_vec;
 
 }  // end of run_mobilenet
 
@@ -149,9 +152,8 @@ function create_dynamic_canvasElement() {
 
 async function main() {
 
-   await run_mobilenet();
+   var pred_vec = await run_mobilenet();
 
-	
    // data accumulates inside model.classify and inside image.onload
    outp.innerHTML += 'pred_vec outside of image.forEach: ' + pred_vec + "<br/>";
 	    
