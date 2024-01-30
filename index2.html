@@ -257,7 +257,23 @@ function create_dynamic_canvasElement(index) {
 	const tblBody = document.createElement("tbody");
 
 	// Create row cells dynamically
-	for (let i=0;)
+	for (let i=0; i < pred_vec.length; i++){
+		// create a table row
+		const row = document.createElement("tr");
+
+		for (let j=0; j < pred_vec[0].length; j++){
+			const cell = document.createElement("td");
+			const cellText = document.createTextNode(`${pred_vec[i][j]}`);
+			cell.appendChild(cellText);
+			row.appendChild(cell);
+		}
+
+		// add a row to the end of the table
+		tblBody.appendChild(row);
+	}
+	tbl.appendChild(tblBody);
+
+	document.body.appendChild(tbl);
   }  
 
   // -------------------------------------------------
