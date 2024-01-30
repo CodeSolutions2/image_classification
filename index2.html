@@ -246,7 +246,9 @@ function create_dynamic_canvasElement(index) {
     link.setAttribute("download", filename);
 	  
     link.style.display = 'block';
-    document.body.appendChild(link);
+
+    outp.innerHTML += 'Download CSV here: ' + url + "<br/>";
+    // document.body.appendChild(link);
 
     // Automatic download of csv
     // link.click();
