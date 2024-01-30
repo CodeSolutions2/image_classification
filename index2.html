@@ -185,8 +185,11 @@ function create_dynamic_canvasElement(index) {
 				// data accumulates correctly in pred_vec, here:
 				// outp.innerHTML += 'pred_vec: ' + pred_vec + "<br/>";
 				
-				// Save array to csv and download csv file
-				await downloadCSV(pred_vec);
+				// Save array to csv and put download csv file link on screen (NO AUTOMATIC DOWNLOADING)
+				await put_results_in_CSVfile(pred_vec);
+
+				// Create a table dynamically with the results
+				await generateTable_dynamically(pred_vec);
 			}
 	  
 	    };  // end of image.onload
@@ -208,7 +211,7 @@ function create_dynamic_canvasElement(index) {
 	
   // -------------------------------------------------
 
-  async function downloadCSV(pred_vec) {
+  async function put_results_in_CSVfile(pred_vec) {
     
     // ---------------------
     // Puts array into csv format
@@ -236,12 +239,26 @@ function create_dynamic_canvasElement(index) {
 
     const filename = 'data.csv';
     link.setAttribute("download", filename);
-    link.style.visibility = 'hidden';
+	  
+    link.style.display = 'block';
     document.body.appendChild(link);
-    link.click();
+
+    // Automatic download of csv
+    // link.click();
     // document.body.removeChild(link);
 	  
 }
+
+  // -------------------------------------------------
+
+  async function generateTable_dynamically(pred_vec) {
+	const tbl = document.createElement("table");
+
+	const tblBody = document.createElement("tbody");
+
+	// Create row cells dynamically
+	for (let i=0;)
+  }  
 
   // -------------------------------------------------
 
@@ -324,7 +341,7 @@ function create_dynamic_canvasElement(index) {
 	    const resultData = await result.data(); // correct
 	    
 	    if (resultData > 0.5){
-		datavec.push(['Granny Smith', resultData]);
+		datavec.push(['apple', resultData]);
 	    } else {
 		datavec.push(['tomatoe', resultData]);
 	    }
