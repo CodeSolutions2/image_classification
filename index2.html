@@ -11,9 +11,14 @@
 	
   <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
 
-	<!-- https://developer.mozilla.org/en-US/docs/Web/CSS/position -->
-<style>canvas {border: 1px solid black; position: absolute; display: inline-block; z-index: 1; top: 150px;}
-div {position: relative; z-index: 2;}
+	
+<!-- https://developer.mozilla.org/en-US/docs/Web/CSS/position -->
+<style>
+canvas {border: 1px solid black; position: absolute; display: inline-block; z-index: 1; top: 150px;},
+div {position: relative; z-index: 2;},
+table {border-collapse: collapse;}
+td,
+th {border: 1px solid black; padding: 10px 20px;}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
