@@ -5,12 +5,6 @@
 	
   <h1 style='text-align: center; margin-bottom: -35px;'>Image labeling webapp</h1>
   <br><br>
-	
-    <!-- <img id="img" src="https://storage.googleapis.com/images4download0/image2.png" style="display:block" width="224" height="224" /> -->
-    <!-- <img id="img" src="apple.png" style="display:block" width="224" height="224" /> -->
-    <!-- OR -->
-    <!-- Makes a selection file reader from the PC only, not from the cloud -->
-    <!-- <input type="file" id="img_input" name="avatar" accept="image/png, image/jpeg"> -->
 
 <!-- Drop down menu: Select image to classify -->
    <label for="select_image">Select an image to classsify/label:</label>
@@ -34,8 +28,6 @@
 
     <div id="output" style="font-family:courier;font-size:24px;height:300px"></div>
 
-    <!-- <textarea id="outData" rows="2" cols="70" placeholder="notification" style="display:block"></textarea> -->
-
 
 	    
 <style>
@@ -47,7 +39,6 @@
 
   
 <script>
-  // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
   var canvasElement = document.getElementById("canvasId");
   const ctx = canvasElement.getContext("2d");
 
@@ -82,7 +73,6 @@
           load_image = "tomatoe3D.png";
 	} else {
           load_image = "tomatoe3D.png";
-	  // load_image = "https://storage.googleapis.com/images4download0/image2.png";
 	} 
     return load_image
   }
@@ -122,7 +112,6 @@
 
   async function run_edgedetection_classifer(){
  
-        // const MODEL_URL = 'https://storage.googleapis.com/tensorflowjsmodels0/model.json';
 	const MODEL_URL = 'model.json';
         const model = await tf.loadLayersModel(MODEL_URL);
           
@@ -156,59 +145,10 @@
             const b = tf.scalar(255);
 	    const image_filter = image_filter0.div(b)
 	    const shape_out = image_filter.shape;
-		  
-            // document.getElementById("outData").innerHTML = shape_out;
-            // 1,276,250,1
 
             // Dispose of the intermediate tensors
             image_filter0.dispose();
             b.dispose();
-		  
-            // -----------------------------------------------
-            // Draw edge detection image on canvas
-            // document.getElementById("canvasId2").style.display = "block";
-            // const edge_image_tensor = tf.reshape(image_filter, [shape_out[1], shape_out[2], shape_out[3]])
-
-	    // ----------------------- try 0 -----------------------
-	    // Convert the cropped tensor back to an image
-            // const edge_image_view = tf.browser.toPixels(edge_image_tensor, document.getElementById('canvasId2')).then(res => res).then(res => { outp.innerHTML = tf.max(res); });
-		// Uncaught (in promise) Error: Tensor values for a float32 Tensor must be in the range [0 - 1] but encountered -5999.99951171875.
-
-
-            
-            // ctx2.drawImage(edge_image_view, 0,0);
-            // Uncaught TypeError: CanvasRenderingContext2D.drawImage: Argument 1 could not be converted to any of: HTMLImageElement, SVGImageElement, HTMLCanvasElement, HTMLVideoElement, OffscreenCanvas, ImageBitmap, VideoFrame.
-
-            // Uncaught (in promise) Error: Tensor values for a float32 Tensor must be in the range [0 - 1] but encountered -5999.99951171875.
-		
-            // ----------------------- try 1 -----------------------
-            // Create a new Uint8ClampedArray from the tensor values
-            // const data = new Uint8ClampedArray(edge_image_tensor);
-
-            // Create a new ImageData object with the tensor shape
-            // const { width, height } = edge_image_tensor.shape;
-            // const imageData = new ImageData(data, width, height);
-
-            // Draw the ImageData onto the canvas
-            // ctx2.putImageData(imageData, 0, 0);
-            // Uncaught DOMException: An attempt was made to use an object that is not, or is no longer, usable
-
-				// Create a new Image element
-  //const imageElement = new Image();
-  
-  // Set the source of the Image element to the data URL of the canvas
-  //imageElement.src = canvasId2.toDataURL();  
-
-		// ----------------------- try 2 -----------------------
-		// const newimage = await tf.browser.toPixels(edge_image_tensor, canvasElement2).then(imageData => imageData).then(imageData => {
-		// 	ctx2.putImageData(imageData, 0, 0);
-    // const newimage = new Image();
-    // newimage.src = canvasElement2.toDataURL();
-			// return newimage;
-		// });;
-		
-		// ctx2.drawImage(newimage, 0, 0);
-
             
 	    // -----------------------------------------------
 		  
@@ -221,25 +161,10 @@
             const newSize = [512, 512];
             const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
 		  
-            // document.getElementById("outData").innerHTML = resizedTensor.shape;
-		  
             // Give image to model
             const result = model.predict(resizedTensor); 
-		outp.innerHTML = result.mean();
+            outp.innerHTML = result.mean();
 		 
-            //if (result.mean() < 0.05) {
-		//outp.innerHTML = "Tomatoe : " + result;
-           //  } else {
-		// outp.innerHTML = "Apple : " + result;
-           //  } 
-		  
-          };  // end of image.onload
-	  
-        //} catch (error) {
-        //  document.getElementById("outData").innerHTML = error; 
-          // return error
-        //}
-	  
   }  // end of run_edgedetection_classifer
 
 	
