@@ -4,7 +4,7 @@
 
 A web application that classifies two similar images like an apple and a tomato using fundamental edge detection methods. The purpose of this Tensorflow.js Webapp is to demonstrate usage of the Tensorflow.js MobileNet API in Javascript/HTML, and to demonstrate prediction of a custom model that predicts similar types of obejcts (ie: apples from tomatoes). In this example, the MobileNet API can not predict apples from tomatoes well, without finetuning. However, a custom model using a Max Pooling Convolutional Neural Network (MPCNN) structure with edge detection pre-processing can predict apples from tomatoes with similar accuracy as the finetunned MobileNet model (an accuracy of 0.9).
 
-[Version 0 - MobileNet functional, MPCNN In progress] https://CodeSolutions2.github.io/image_classification/index.html
+[Version 0] https://CodeSolutions2.github.io/image_classification/index.html
 
 [Version 1 - MobileNet functional, MPCNN In progress] https://CodeSolutions2.github.io/image_classification/index1.html
 
