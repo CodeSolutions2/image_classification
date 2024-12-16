@@ -114,37 +114,37 @@ async function mobilenet_image_NoTransferLearning() {
 	imageElement.setAttribute('headers', {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"});
 	imageElement.onload = async () => {
 
-    // ----------------------------------
-
-    // Print image
+		// ----------------------------------
+	
+		// Print image
 		ctx.drawImage(imageElement, 0, 0, canvasElement.width, canvasElement.height); 
-
-    // ----------------------------------
-    
-    // Model prediction
-    const predictions = await mobilenet_model(imageElement);
-
-    // OR
-
-    // Convert the image element to a tensor using fromPixels
-    // var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-    // const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
-    // const predictions = await mobilenet_model(eTensor);
-    
-    // ----------------------------------
-
-    // Print text on image
-    ctx.font = "bold 14px serif";
-  
-    // Make an overlay on top of the image
-    ctx.fillStyle = "rgb(0 0 200 / 50%)";  // Background square over image = blue
-    ctx.fillRect(0, 0, 224, 50);  // fillRect(x, y, width, height)
-
-    // Write on top of the overlay the prediction name
-    ctx.fillStyle = "#ffffff";  // Font color = white
-    ctx.fillText("Mobilenet= "+predictions[0].className, 10, 15); // fillText(text, x, y [, maxWidth])
-
-    // ----------------------------------
+	
+		// ----------------------------------
+	    
+		// Model prediction
+		const predictions = await mobilenet_model(imageElement);
+	
+		// OR
+	
+		// Convert the image element to a tensor using fromPixels
+		// var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+		// const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+		// const predictions = await mobilenet_model(eTensor);
+	    
+		// ----------------------------------
+	
+		// Print text on image
+		ctx.font = "bold 14px serif";
+	  
+		// Make an overlay on top of the image
+		ctx.fillStyle = "rgb(0 0 200 / 50%)";  // Background square over image = blue
+		ctx.fillRect(0, 0, 224, 50);  // fillRect(x, y, width, height)
+	
+		// Write on top of the overlay the prediction name
+		ctx.fillStyle = "#ffffff";  // Font color = white
+		ctx.fillText("Mobilenet= "+predictions[0].className, 10, 15); // fillText(text, x, y [, maxWidth])
+	
+		// ----------------------------------
     
 	};
 	imageElement.src = document.getElementById("url").value;
@@ -154,11 +154,13 @@ async function mobilenet_image_NoTransferLearning() {
 // -------------------------------------------------
 
 async function custom_model() {
+	
+	var model_layers_url = document.getElementById("url_model_layers").value;
+	
+	var json_out = await call_fetch_method(model_layers_url);
+	console.log('json_out: ', json_out);
 
-  var model_layers_url = document.getElementById("url_model_layers").value;
-  var json_out = await call_fetch_method(model_layers_url);
-
-  const model = await tf.loadLayersModel(json_out);
+	const model = await tf.loadLayersModel(json_out);
 
 	// Leave the .bin files for now - need to figure how to fetch them
 
@@ -169,66 +171,66 @@ async function custom_model() {
 	imageElement.setAttribute('crossOrigin', "anonymous");
 	imageElement.setAttribute('headers', {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"});
 	imageElement.onload = async () => {
+		
+		// ----------------------------------
 
-    // ----------------------------------
-
-    // Print image
+		// Print image
 		ctx.drawImage(imageElement, 0, 0, canvasElement.width, canvasElement.height); 
 
-    // ----------------------------------
+		// ----------------------------------
     
-    // Model prediction
-    // Convert the image element to a tensor using fromPixels
-    var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
-    
-    const k_rgb_values = tf.tensor4d([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]], shape=[3, 3, 3, 1], dtype='float32');
+		// Model prediction
+		// Convert the image element to a tensor using fromPixels
+		var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+		    
+		const k_rgb_values = tf.tensor4d([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]], shape=[3, 3, 3, 1], dtype='float32');
+				  
+		const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
+			    
+		const image_4D_float = tf.cast(image_4D, 'float32')
+		const image_filter0 = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same') 
+		
+		// Dispose of the intermediate tensors
+		tensor_image.dispose();
+		k_rgb_values.dispose();
+		image_4D.dispose();
+		image_4D_float.dispose();
+				  
+		// Make image values from -1 to 1
+		const b = tf.scalar(255);
+		const image_filter = image_filter0.div(b)
+		const shape_out = image_filter.shape;
+		
+		// Dispose of the intermediate tensors
+		image_filter0.dispose();
+		b.dispose();
+				  
+		// Ensure that tensor is 4d
+		const x = tf.reshape(image_filter, [1, shape_out[1], shape_out[2], shape_out[3]])
+		
+		// const boxes = tf.tensor2d([[0.25, 0.25, 0.75, 0.75]], [1, 4]);
+		const boxes = tf.tensor2d([[0, 0, 1, 1]], [1, 4]);
+		const boxIndices = tf.tensor1d([0], 'int32');
+		const newSize = [512, 512];
+		const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
+				  
+		// Give image to model
+		const result = model.predict(resizedTensor); 
+		
+		// ----------------------------------
+		
+		// Print text on image
+		ctx.font = "bold 14px serif";
 		  
-    const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
-	    
-    const image_4D_float = tf.cast(image_4D, 'float32')
-    const image_filter0 = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same') 
-
-    // Dispose of the intermediate tensors
-    tensor_image.dispose();
-    k_rgb_values.dispose();
-    image_4D.dispose();
-    image_4D_float.dispose();
-		  
-    // Make image values from -1 to 1
-    const b = tf.scalar(255);
-    const image_filter = image_filter0.div(b)
-    const shape_out = image_filter.shape;
-
-    // Dispose of the intermediate tensors
-    image_filter0.dispose();
-    b.dispose();
-		  
-    // Ensure that tensor is 4d
-    const x = tf.reshape(image_filter, [1, shape_out[1], shape_out[2], shape_out[3]])
-
-    // const boxes = tf.tensor2d([[0.25, 0.25, 0.75, 0.75]], [1, 4]);
-    const boxes = tf.tensor2d([[0, 0, 1, 1]], [1, 4]);
-    const boxIndices = tf.tensor1d([0], 'int32');
-    const newSize = [512, 512];
-    const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
-		  
-    // Give image to model
-    const result = model.predict(resizedTensor); 
-
-    // ----------------------------------
-
-    // Print text on image
-    ctx.font = "bold 14px serif";
-  
-    // Make an overlay on top of the image
-    ctx.fillStyle = "rgb(0 0 200 / 50%)";  // Background square over image = blue
-    ctx.fillRect(0, 0, 224, 50);  // fillRect(x, y, width, height)
-
-    // Write on top of the overlay the prediction name
-    ctx.fillStyle = "#ffffff";  // Font color = white
-    ctx.fillText("EdgeDetectionModel= "+result.mean(), 10, 15); // fillText(text, x, y [, maxWidth])
-
-    // ----------------------------------
+		// Make an overlay on top of the image
+		ctx.fillStyle = "rgb(0 0 200 / 50%)";  // Background square over image = blue
+		ctx.fillRect(0, 0, 224, 50);  // fillRect(x, y, width, height)
+		
+		// Write on top of the overlay the prediction name
+		ctx.fillStyle = "#ffffff";  // Font color = white
+		ctx.fillText("EdgeDetectionModel= "+result.mean(), 10, 15); // fillText(text, x, y [, maxWidth])
+		
+		// ----------------------------------
     
 	};
 	imageElement.src = document.getElementById("url").value;
@@ -309,7 +311,7 @@ async function call_fetch_method(url) {
 			}
 			
 		} catch (error) {
-			cnsole.log("error: ", error);
+			console.log("error: ", error);
 		}
 		if (response != undefined) {
 			break;
