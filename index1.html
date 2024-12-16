@@ -162,7 +162,7 @@ async function custom_model() {
 	var model_layers_url = document.getElementById("url_model_layers").value;
 	
 	var json_out = await call_fetch_method(model_layers_url);
-	console.log('json_out: ', json_out);
+	console.log('json_out: ', json_out); 
 
 	const model = await tf.loadLayersModel(json_out);
 
