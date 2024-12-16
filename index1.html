@@ -185,7 +185,7 @@ async function custom_model() {
     
 		// Model prediction
 		// Convert the image element to a tensor using fromPixels
-		var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+		var tensor_image = tf.browser.fromPixels(imageElement); // This is size 224,224,3
 		    
 		const k_rgb_values = tf.tensor4d([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]], shape=[3, 3, 3, 1], dtype='float32');
 				  
