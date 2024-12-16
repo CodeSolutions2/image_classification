@@ -1,8 +1,18 @@
 # image_classification
 
-A web application that classifies two similar images like an apple and a tomato using fundamental edge detection methods. The purpose of this Tensorflow.js Webapp is to demonstrate usage of the Tensorflow.js MobileNet API in Javascript/HTML, and to demonstrate prediction of a custom model that predicts similar types of obejcts (ie: apples from tomatoes). In this example, the MobileNet API can not predict apples from tomatoes well, without finetuning. Finetuning of the MobileNet model is demonstrated at https://www.kaggle.com/code/jamilahfoucher/tensorflowjs-image-classification-model-deploy. Additionally, training a MPCNN model with edge detection pre-processing showed similar accuracy as the finetunned MobileNet model, at accuracy of 0.9. The MPCNN model with edge detection pre-processing is available at Kaggle Models (https://www.kaggle.com/models/jamilahfoucher/image_classification_via_edge_detection).
+## Tensorflow.js MobileNet compared with a custom model (MPCNN model) with edge detection pre-processing
 
-[Completed working version] https://CodeSolutions2.github.io/image_classification/index.html
+A web application that classifies two similar images like an apple and a tomato using fundamental edge detection methods. The purpose of this Tensorflow.js Webapp is to demonstrate usage of the Tensorflow.js MobileNet API in Javascript/HTML, and to demonstrate prediction of a custom model that predicts similar types of obejcts (ie: apples from tomatoes). In this example, the MobileNet API can not predict apples from tomatoes well, without finetuning. However, a custom model using a Max Pooling Convolutional Neural Network (MPCNN) structure with edge detection pre-processing can predict apples from tomatoes with similar accuracy as the finetunned MobileNet model (an accuracy of 0.9).
+
+[Version 0 - non-functional due to function updates] https://CodeSolutions2.github.io/image_classification/index.html
+
+[Version 1 - In progress] https://CodeSolutions2.github.io/image_classification/index.html
+
+
+## Kaggle
+- Finetuning of the Tensorflow MobileNet model - https://www.kaggle.com/code/jamilahfoucher/tensorflowjs-image-classification-model-deploy
+- The MPCNN model with edge detection pre-processing is available at Kaggle Models - https://www.kaggle.com/models/jamilahfoucher/image_classification_via_edge_detection
+
 
 ## Upwork
 The objective of this work was to create a web application that can automatically label images that are in a GitHub repository. The user inputs the Github repository url and the web application outputs a table/csv file of each repo image with a label. This application is useful for creating supervised image prediction models, because it is necessary to have a reliable label for each image that a supervised model will be trained on. 
@@ -14,12 +24,3 @@ Tier 3:  perform tier 2 functionality and  efficient memory usage strategies, su
 
 [Available for purchase on Upwork](https://www.upwork.com/services/product/development-it-image-labeling-webapp-using-tensorflow-js-1752011396357709824)
 
-## Extra
-
-If you are interested in making your own GitHub Web Page, the steps to transform a GitHub Repository are below:
-
-0. Configure GitHub Pages: Go to your repository on GitHub. Click on the "Settings" tab, scroll down to the "GitHub Pages" section. Under the "Source" dropdown, select "master branch" or the branch you want to use for deployment. Click on the "Save" button.
-
-1. Access your deployed website: After the configuration step, you will see a message indicating the URL where your website is deployed. It usually follows the pattern `https://<your-github-username>.github.io/<repository-name>`.
-  
-It may take a few minutes for your changes to be reflected on the deployed website. Good luck and thanks for the interest!
