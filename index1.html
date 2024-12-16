@@ -219,7 +219,8 @@ async function custom_model() {
 		const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
 				  
 		// Give image to model
-		const result = model.predict(resizedTensor); 
+		const result = model.predict(resizedTensor);
+		console.log('result: ', result);
 		
 		// ----------------------------------
 		
