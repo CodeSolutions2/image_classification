@@ -164,7 +164,7 @@ async function custom_model() {
 	var model_json_obj = await call_fetch_method(model_layers_url);
 	console.log('model_json_obj: ', model_json_obj); 
 
-	const model = await tf.loadLayersModel(tf.io.fromMemory(file_path_to_model_json));
+	const model = await tf.loadLayersModel(tf.io.fromMemory(model_json_obj));
 
 	// Leave the .bin files for now - need to figure how to fetch them
 
