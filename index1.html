@@ -52,23 +52,25 @@ window.addEventListener('beforeunload', function() {
 // -------------------------------------------------
 	
 async function processEvent_dropdown_options(event) {
+
+	console.log("dropdown selection: ", document.getElementById("dropdown_options").selectedIndex)
 	
-	if (document.getElementById("dropdown_options").selectedIndex == 0) {
+	if (document.getElementById("dropdown_options").selectedIndex == 1) {
 		document.getElementById("url").style.display = 'block';
 		document.getElementById("url_label").style.display = 'block';
-    document.getElementById("url_model_layers").style.display = 'none';
+		document.getElementById("url_model_layers").style.display = 'none';
 		document.getElementById("url_model_layers_label").style.display = 'none';
-
-  } else if (document.getElementById("dropdown_options").selectedIndex == 1) {
-    document.getElementById("url").style.display = 'block';
+	
+	} else if (document.getElementById("dropdown_options").selectedIndex == 2) {
+		document.getElementById("url").style.display = 'block';
 		document.getElementById("url_label").style.display = 'block';
-    document.getElementById("url_model_layers").style.display = 'block';
+		document.getElementById("url_model_layers").style.display = 'block';
 		document.getElementById("url_model_layers_label").style.display = 'block';
     
 	} else {
 		document.getElementById("url").style.display = 'none';
 		document.getElementById("url_label").style.display = 'none';
-    document.getElementById("url_model_layers").style.display = 'none';
+		document.getElementById("url_model_layers").style.display = 'none';
 		document.getElementById("url_model_layers_label").style.display = 'none';
 	}
 	
