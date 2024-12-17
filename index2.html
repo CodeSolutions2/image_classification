@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+	
+<h1 style='text-align: center; margin-bottom: -35px;'>Automatic image classification/labeling webapp</h1>
+
+<br>
+
+<label for="select_dropdown_option_label">Select a choice:</label>
+<select name="dropdown_options" id="dropdown_options" style="display:block">
+  <option value="---">Select an option</option>
+  <option value="mobilenet_image_NoTransferLearning">mobilenet_image_NoTransferLearning</option>
+  <option value="custom_model">custom_model</option>
+</select>
+
+<h4 id="url_label" style="display:none;">Enter a url of the image:</h4>
+<input type="text" name="url" id="url" value="" style="display:none;">
+
+<h4 id="url_model_layers_label" style="display:none;">Enter a url of the custom model layers:</h4>
+<input type="text" name="url_model_layers" id="url_model_layers" value="" style="display:none;">
+
+<button id="run_selection" onclick="run_selection()">run_selection</button>
+
+<div id="data_display" style="display:block; text-align: left; width: 600px;"></div>
+<br>
+<div id="notification"></div>
+
+<!-- ---------------------------------------- -->
+	    
+<style>
+canvas {border: 1px solid black;}
+div#notification { position: relative; color: #3236a8; }
+</style>
+
+<!-- ---------------------------------------- -->
+      
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script> 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	
+<!-- ---------------------------------------- -->
+      
+<script>
+
+// -----------------------------------------------
+
+window.addEventListener('beforeunload', function() {
+	window.location.href = window.location.href + '?nocache=' + new Date().getTime();
+	document.getElementById("dropdown_options").selectedIndex = 0;
+});
+
+// -------------------------------------------------
+	
+async function processEvent_dropdown_options(event) {
+
+	console.log("dropdown selection: ", document.getElementById("dropdown_options").selectedIndex)
+	
+	if (document.getElementById("dropdown_options").selectedIndex == 1) {
+		document.getElementById("url").style.display = 'block';
+		document.getElementById("url_label").style.display = 'block';
+		document.getElementById("url_model_layers").style.display = 'none';
+		document.getElementById("url_model_layers_label").style.display = 'none';
+	
+	} else if (document.getElementById("dropdown_options").selectedIndex == 2) {
+		document.getElementById("url").style.display = 'block';
+		document.getElementById("url_label").style.display = 'block';
+		document.getElementById("url_model_layers").style.display = 'block';
+		document.getElementById("url_model_layers_label").style.display = 'block';
+    
+	} else {
+		document.getElementById("url").style.display = 'none';
+		document.getElementById("url_label").style.display = 'none';
+		document.getElementById("url_model_layers").style.display = 'none';
+		document.getElementById("url_model_layers_label").style.display = 'none';
+	}
+	
+}
+
+document.getElementById("dropdown_options").addEventListener("change", processEvent_dropdown_options, false);
+	
+// -------------------------------------------------
+
+var canvasElement;
+var ctx;
+
+var width_ORG = 256;
+var height_ORG = 256;
+
+// -------------------------------------------------
+
+async function run_selection() {
+
+  var dropdown_option_type = document.getElementById("dropdown_options").value;
+
+	if (dropdown_option_type == 'mobilenet_image_NoTransferLearning') {
+		await mobilenet_image_NoTransferLearning();
+
+	} else if (dropdown_option_type == 'custom_model') {
+		await custom_model();
+
+	} else {
+		document.getElementById("notification") = "No dropdown type selected";
+	}
+
+}
+
+// -------------------------------------------------
+	
+async function mobilenet_image_NoTransferLearning() {
+
+	// Single url
+	[ctx, canvasElement] = await create_dynamic_canvasElement(width_ORG, height_ORG, 'canvasElement_id', 'canvasElement_className', 0);
+
+      // Add the canvas to the DOM
+		document.getElementById('data_display').appendChild(canvasElement);
+
+	const imageElement = new Image();
+	imageElement.setAttribute('crossOrigin', "anonymous");
+	imageElement.setAttribute('headers', {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"});
+	imageElement.onload = async () => {
+
+		// ----------------------------------
+	
+		// Print image
+		ctx.drawImage(imageElement, 0, 0, canvasElement.width, canvasElement.height); 
+	
+		// ----------------------------------
+	    
+		// Model prediction
+		const predictions = await mobilenet_model(imageElement);
+	
+		// OR
+	
+		// Convert the image element to a tensor using fromPixels
+		// var tensor_image = tf.browser.fromPixels(image); // This is size 224,224,3
+		// const eTensor = tensor_image.expandDims(0); // This is size 1,224,224,3
+		// const predictions = await mobilenet_model(eTensor);
+	    
+		// ----------------------------------
+	
+		// Print text on image
+		ctx.font = "bold 14px serif";
+	  
+		// Make an overlay on top of the image
+		ctx.fillStyle = "rgb(0 0 200 / 50%)";  // Background square over image = blue
+		ctx.fillRect(0, 0, 224, 50);  // fillRect(x, y, width, height)
+	
+		// Write on top of the overlay the prediction name
+		ctx.fillStyle = "#ffffff";  // Font color = white
+		ctx.fillText("Mobilenet= "+predictions[0].className, 10, 15); // fillText(text, x, y [, maxWidth])
+	
+		// ----------------------------------
+    
+	};
+	imageElement.src = document.getElementById("url").value;
+	
+}  
+
+// -------------------------------------------------
+
+async function custom_model() {
+	
+	var model_layers_url = document.getElementById("url_model_layers").value;
+	
+	var model_json_obj = await call_fetch_method(model_layers_url);
+	console.log('model_json_obj: ', model_json_obj); 
+
+	
+
+const list_of_paths = model_json_obj.weightsManifest.at(0).paths
+  console.log('list_of_paths: ', list_of_paths);
+  
+// What is the best way to obtain group1-shard1of5.bin, group1-shard2of5.bin, group1-shard3of5.bin, group1-shard4of5.bin, group1-shard5of5.bin
+
+// "paths": ["image_classification/group1-shard1of5.bin", "image_classification/group1-shard2of5.bin", "image_classification/group1-shard3of5.bin", "image_classification/group1-shard4of5.bin", "image_classification/group1-shard5of5.bin"]
+
+  const first_part_url = model_layers_url.split("/").pop().join('');  // keep the array values before the last backslash
+  console.log('first_part_url: ', first_part_url);
+  
+  for (let i=0; i<list_of_paths.length; i++) {
+
+    var path = list_of_paths.at(i).split("/").shift();  // keep the array values after the last backslash
+    console.log('first_part_url: ', first_part_url);
+    
+    // modify model_layers_url 
+    model_layers_url = first_part_url + '/' + path;
+    console.log('model_layers_url: ', model_layers_url);
+    
+    
+    var bin = await call_fetch_method(model_layers_url);
+    
+  }
+  
+  // Way 0:
+
+
+  // Way 1:
+  
+  
+  const model = await tf.loadLayersModel(tf.io.fromMemory(model_json_obj));
+  
+	[ctx, canvasElement] = await create_dynamic_canvasElement(width_ORG, height_ORG, 'canvasElement_id', 'canvasElement_className', 0);
+
+  // Add the canvas to the DOM
+		document.getElementById('data_display').appendChild(canvasElement);
+
+	const imageElement = new Image();
+	imageElement.setAttribute('crossOrigin', "anonymous");
+	imageElement.setAttribute('headers', {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"});
+	imageElement.onload = async () => {
+		
+		// ----------------------------------
+
+		// Print image
+		ctx.drawImage(imageElement, 0, 0, canvasElement.width, canvasElement.height); 
+
+		// ----------------------------------
+    
+		// Model prediction
+		// Convert the image element to a tensor using fromPixels
+		var tensor_image = tf.browser.fromPixels(imageElement); // This is size 224,224,3
+		    
+		const k_rgb_values = tf.tensor4d([[[[ 1000.], [ 1000.], [ 1000.]],[[    0.], [    0.], [    0.]],[[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]], [[[ 1000.], [ 1000.], [ 1000.]], [[    0.], [    0.], [    0.]], [[-1000.], [-1000.], [-1000.]]]], shape=[3, 3, 3, 1], dtype='float32');
+				  
+		const image_4D = tensor_image.expandDims(0); // This is size 1,224,224,3
+			    
+		const image_4D_float = tf.cast(image_4D, 'float32')
+		const image_filter0 = tf.conv2d(image_4D_float, k_rgb_values, 1, 'same') 
+		
+		// Dispose of the intermediate tensors
+		tensor_image.dispose();
+		k_rgb_values.dispose();
+		image_4D.dispose();
+		image_4D_float.dispose();
+				  
+		// Make image values from -1 to 1
+		const b = tf.scalar(255);
+		const image_filter = image_filter0.div(b)
+		const shape_out = image_filter.shape;
+		
+		// Dispose of the intermediate tensors
+		image_filter0.dispose();
+		b.dispose();
+				  
+		// Ensure that tensor is 4d
+		const x = tf.reshape(image_filter, [1, shape_out[1], shape_out[2], shape_out[3]])
+		
+		// const boxes = tf.tensor2d([[0.25, 0.25, 0.75, 0.75]], [1, 4]);
+		const boxes = tf.tensor2d([[0, 0, 1, 1]], [1, 4]);
+		const boxIndices = tf.tensor1d([0], 'int32');
+		const newSize = [512, 512];
+		const resizedTensor = tf.image.cropAndResize(x, boxes, boxIndices, newSize);
+				  
+		// Give image to model
+		const result = model.predict(resizedTensor);
+		console.log('result: ', result);
+		
+		// ----------------------------------
+		
+		// Print text on image
+		ctx.font = "bold 14px serif";
+		  
+		// Make an overlay on top of the image
+		ctx.fillStyle = "rgb(0 0 200 / 50%)";  // Background square over image = blue
+		ctx.fillRect(0, 0, 224, 50);  // fillRect(x, y, width, height)
+		
+		// Write on top of the overlay the prediction name
+		ctx.fillStyle = "#ffffff";  // Font color = white
+		ctx.fillText("EdgeDetectionModel= "+result.mean(), 10, 15); // fillText(text, x, y [, maxWidth])
+		
+		// ----------------------------------
+    
+	};
+	imageElement.src = document.getElementById("url").value;
+	
+}
+	
+// -------------------------------------------------
+
+
+
+
+  
+
+// -------------------------------------------------
+// IMAGE SUBFUNCTIONS
+// -------------------------------------------------
+async function create_dynamic_canvasElement(width, height, canvasElement_id, canvasElement_className, canvas_number=0) {
+  
+	// Create a canvas element
+	var canvasElement = document.createElement('canvas');
+
+	// Set attributes of the canvas
+	canvasElement.width = width;
+	canvasElement.height = height;
+  	canvasElement.id = canvasElement_id;
+	canvasElement.class = canvasElement_className;
+	
+	// Get the 2D rendering context of the canvas
+	var ctx = canvasElement.getContext("2d");
+
+	// -------------------------
+
+	// (Optional) Parameter to put canvas next to each other
+	if (canvas_number == 0) {
+		canvasElement.style.left = 40+'px';
+	} else {
+		// Append a canvas to the right of an existing canvas
+		let tot = canvas_number*canvasElement.width + 40;
+		canvasElement.style.left = tot+'px';
+	}
+
+	// -------------------------
+
+	// Make a canvas border
+	canvasElement.style.border = '1px solid black';
+
+	return [ctx, canvasElement];
+}
+
+// -------------------------------------------------
+  
+async function mobilenet_model(imageElement) {
+  // Mobilenet: model prediction only
+	return await mobilenet.load()
+    .then(model => { 
+      return model.classify(imageElement)
+        .then(predictions => { 
+          console.log("predictions: ", predictions); 
+          return predictions;
+        })
+		});
+}
+
+// -----------------------------------------------
+
+async function call_fetch_method(url) {
+	
+	const CORS_method_list = ["jQuery_GET", "fetch_GET"];
+	
+	var response = undefined;
+		
+	for (var i=0; i<CORS_method_list.length; i++) {
+		try {
+			if (i == 0) {
+				response = await fetch_GET(url);
+			} else {
+				response = await jQuery_GET(url);
+			}
+			
+		} catch (error) {
+			console.log("error: ", error);
+		}
+		if (response != undefined) {
+			break;
+		}
+	}
+	return response;
+}
+
+// -----------------------------------------------
+
+async function fetch_GET(url) {
+	
+	var headers = {
+		"Content-Type": "application/json",
+		"Referer": url,
+		"Origin": "https://codesolutions2.github.io",
+		"Connection": "keep-alive",
+		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0",
+		"Access-Control-Allow-Origin": "*",
+	};
+	
+	var options = { 
+		method : "GET",
+		mode: 'cors',
+		headers: new Headers(headers),
+		cache: "no-cache",
+		crossorigin: 'anonymous',
+		redirect: "follow"
+	};
+	
+	return await fetch(url, options)
+		.then(res => res.json())
+		.then(data => { return data; })
+		.catch(error => { console.error("error: ", error); });
+
+}
+
+// -----------------------------------------------
+
+async function jQuery_GET(url) {
+	
+	var headers = {
+		"Content-Type": "application/json",
+		"Referer": url,
+		"Origin": "https://codesolutions2.github.io",
+		"Connection": "keep-alive",
+		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0",
+		"Access-Control-Allow-Origin": "*",
+	};
+	
+	var settings = {
+		type : "GET",
+		async: true,
+		crossDomain: true,
+		beforeSend: function(xhr) {xhr.withCredentials = true;},
+		// headers: new Headers(headers),
+		xhrFields: {responseType: 'json'},
+		dataType: 'json',
+		success: function(response) { console.log('Success'); },
+		error: function(xhr, status, error) { console.error("error: ", error); }
+	};
+	
+	return $.ajax(url, [,settings]).done(function(response) { return response; });
+
+}
+
+// -----------------------------------------------
+
+
+
+  
+  
+</script>
+</body>
+</html>
