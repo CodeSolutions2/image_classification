@@ -164,7 +164,7 @@ async function custom_model() {
 	
 	var model_layers_url = document.getElementById("url_model_layers").value;
 	
-	var model_json_obj = await call_fetch_method(model_layers_url);
+	var model_json_obj = await call_fetch_method(model_layers_url, "obj");
 	console.log('model_json_obj: ', model_json_obj); 
 
 	
@@ -176,6 +176,7 @@ const list_of_paths = model_json_obj.weightsManifest.at(0).paths
 
 // "paths": ["image_classification/group1-shard1of5.bin", "image_classification/group1-shard2of5.bin", "image_classification/group1-shard3of5.bin", "image_classification/group1-shard4of5.bin", "image_classification/group1-shard5of5.bin"]
 
+	// Way 0: fetch all items listed in the model object paths, and give a url path to each fetched object
   const first_part_url = model_layers_url.split("/").pop().join('');  // keep the array values before the last backslash
   console.log('first_part_url: ', first_part_url);
   
@@ -187,16 +188,15 @@ const list_of_paths = model_json_obj.weightsManifest.at(0).paths
     // modify model_layers_url 
     model_layers_url = first_part_url + '/' + path;
     console.log('model_layers_url: ', model_layers_url);
-    
-    
-    var bin = await call_fetch_method(model_layers_url);
-    
+
+	  // fetch binary shard file
+    var bin = await call_fetch_method(model_layers_url, "arraybuffer");
+
+	  // reassign a url path to the fetched binary file in the model object
+    model_json_obj.weightsManifest.at(0).paths.at(i) = URL.createObjectURL(bin);
   }
   
-  // Way 0:
 
-
-  // Way 1:
   
   
   const model = await tf.loadLayersModel(tf.io.fromMemory(model_json_obj));
@@ -336,33 +336,36 @@ async function mobilenet_model(imageElement) {
 
 // -----------------------------------------------
 
-async function call_fetch_method(url) {
+async function call_fetch_method(url, return_type) {
 	
-	const CORS_method_list = ["jQuery_GET", "fetch_GET"];
-	
+	const CORS_method_list = ["jQuery", "fetch"];
 	var response = undefined;
 		
 	for (var i=0; i<CORS_method_list.length; i++) {
 		try {
-			if (i == 0) {
-				response = await fetch_GET(url);
-			} else {
-				response = await jQuery_GET(url);
+			if (CORS_method_list.at(i) == "jQuery") {
+				if (return_type == "obj") {
+					response = await jQuery_obj_GET(url);
+				} else if (return_type == "arraybuffer") {
+					response = await jQuery_arrayBuffer_GET(url)
+				}
+			} else if (CORS_method_list.at(i) == "fetch") {
+				if (return_type == "obj") {
+					response = await fetch_obj_GET(url);
+				} else if (return_type == "arraybuffer") {
+					response = await fetch_arrayBuffer_GET(url)
+				}
 			}
 			
-		} catch (error) {
-			console.log("error: ", error);
-		}
-		if (response != undefined) {
-			break;
-		}
+		} catch (error) { console.log("error: ", error); }
+		if (response != undefined) { break; }
 	}
 	return response;
 }
 
 // -----------------------------------------------
 
-async function fetch_GET(url) {
+async function fetch_obj_GET(url) {
 	
 	var headers = {
 		"Content-Type": "application/json",
@@ -391,7 +394,7 @@ async function fetch_GET(url) {
 
 // -----------------------------------------------
 
-async function jQuery_GET(url) {
+async function jQuery_obj_GET(url) {
 	
 	var headers = {
 		"Content-Type": "application/json",
@@ -410,6 +413,64 @@ async function jQuery_GET(url) {
 		// headers: new Headers(headers),
 		xhrFields: {responseType: 'json'},
 		dataType: 'json',
+		success: function(response) { console.log('Success'); },
+		error: function(xhr, status, error) { console.error("error: ", error); }
+	};
+	
+	return $.ajax(url, [,settings]).done(function(response) { return response; });
+
+}
+
+// -----------------------------------------------
+
+async function fetch_arrayBuffer_GET(url) {
+	
+	var headers = {
+		"Content-Type": "application/json",
+		"Referer": url,
+		"Origin": "https://codesolutions2.github.io",
+		"Connection": "keep-alive",
+		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0",
+		"Access-Control-Allow-Origin": "*",
+	};
+	
+	var options = { 
+		method : "GET",
+		mode: 'cors',
+		headers: new Headers(headers),
+		cache: "no-cache",
+		crossorigin: 'anonymous',
+		redirect: "follow"
+	};
+	
+	return await fetch(url, options)
+		.then(response => response.arrayBuffer())
+		.then(async function(arraybuffer) { return arraybuffer; })
+		.catch(error => console.error("error: ", error));
+
+}
+
+// -----------------------------------------------
+
+async function jQuery_arrayBuffer_GET(url) {
+	
+	var headers = {
+		"Content-Type": "application/json",
+		"Referer": url,
+		"Origin": "https://codesolutions2.github.io",
+		"Connection": "keep-alive",
+		"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0",
+		"Access-Control-Allow-Origin": "*",
+	};
+	
+	var settings = {
+		type : "GET",
+		async: true,
+		crossDomain: true,
+		beforeSend: function(xhr) {xhr.withCredentials = true;},
+		// headers: new Headers(headers),
+		xhrFields: {responseType: 'arrayBuffer'},
+		dataType: 'binary',
 		success: function(response) { console.log('Success'); },
 		error: function(xhr, status, error) { console.error("error: ", error); }
 	};
